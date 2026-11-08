@@ -69,7 +69,7 @@
 
   // 見えているあいだだけ、無音のループ動画を流す。動きを減らす設定なら止めておき、ボタンで流せる
   document.querySelectorAll("video.js-autoplay").forEach((video) => {
-    const button = video.closest(".feature-media-wrap")?.querySelector(".feature-toggle");
+    const button = video.closest(".js-video-wrap")?.querySelector(".feature-toggle");
     let userPaused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const syncButton = () => {
       if (!button) return;
