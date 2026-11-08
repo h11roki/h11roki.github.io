@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How I work | Hiroki Takahashi</title>
+  <meta name="description" content="How I work: I decide what to adopt by the numbers and write down the reasoning. I ship every data fix together with a guard against recurrence, count errors by cause, and compare each change before and after on the same stores. How I split work between rules and LLMs, and between AI and myself.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How I work | Hiroki Takahashi">
+  <meta property="og:description" content="I decide what to adopt by the numbers and write down the reasoning. When data is wrong, I don't just fix it; I make sure the same error never gets in again.">
+  <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/workstyle.html">
+  <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/workstyle.html">
+  <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="../assets/style.css?v=20261108g">
+  <script>document.documentElement.classList.add("js")</script>
+  <script src="../assets/main.js?v=20261108e" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html">Hiroki Takahashi <small>髙橋 浩樹</small></a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Accuracy</a></li>
+          <li><a href="eval.html">Faster evals</a></li>
+          <li><a href="workstyle.html" aria-current="page">How I work</a></li>
+          <li><a href="shirube.html">shirube</a></li>
+          <li><a href="tonari.html">tonari</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a class="lang-switch" href="../workstyle.html" lang="ja" hreflang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <div class="doc-hero">
+        <p class="crumbs"><a href="index.html">Home</a> / Work / How I work</p>
+        <p class="eyebrow">Baseconnect Inc. · Long-term internship · Personal projects</p>
+        <h1>How I work</h1>
+        <p class="lead">I decide what to adopt by the numbers, and I write down why. When data is wrong, I don't stop at fixing it; I make sure the same error can't get in again. This is how I've been working, both in my internship and on my personal projects.</p>
+      </div>
+
+      <div class="doc-layout">
+        <nav class="toc" aria-label="On this page" data-spy>
+          <p>Contents</p>
+          <ol>
+            <li><a href="#principles">What I value</a></li>
+            <li><a href="#fixes">Examples of fixes</a></li>
+            <li><a href="#prevent">Fix it, then block it at the entry point</a></li>
+            <li><a href="#causes">Count errors by cause</a></li>
+            <li><a href="#compare">Compare before and after</a></li>
+            <li><a href="#rules">Rules vs. LLMs</a></li>
+            <li><a href="#monitoring">Trace it to the monitoring gap</a></li>
+            <li><a href="#ai">Working with AI</a></li>
+            <li><a href="#tools">Remove friction with tools</a></li>
+            <li><a href="#database">Database and API</a></li>
+          </ol>
+        </nav>
+
+        <article class="doc">
+          <section id="principles" aria-labelledby="h-principles">
+            <h2 id="h-principles"><span class="idx">01</span>What I value</h2>
+            <p>LLM output always looks plausible, so I decide what to adopt by the numbers, not by feel. I work the same way at my internship and on personal projects.</p>
+            <div class="principles">
+              <div class="principle reveal">
+                <h3>Decide how to measure before changing anything</h3>
+                <p>Before starting on improvements, I build the evaluation set and the tooling to compare against it. I write down the adoption criteria before I measure.</p>
+                <p class="evidence"><b>shirube</b>&emsp;I noticed that even two unchanged, identical configurations came out "significantly different" at twice the nominal rate, so I switched to interleaved runs of the two configurations compared with a permutation test.</p>
+              </div>
+              <div class="principle reveal">
+                <h3>Be most skeptical when the numbers go up</h3>
+                <p>A gain on the data used for tuning isn't necessarily a gain in production accuracy. I don't adopt an improvement I can't explain.</p>
+                <p class="evidence"><b>Internship</b>&emsp;A 14-row lookup table with no source, which we had added ourselves, accounted for about 2 pt of precision. In production it would change the answers for about 4,400 stores with no basis, so I removed it, knowing the number would drop.</p>
+              </div>
+              <div class="principle reveal">
+                <h3>Measure and roll back, even my own changes</h3>
+                <p>I decide based not only on the new correct answers a change produces but also on the new errors it introduces. In PRs I report both, like "Correct +16 / Wrong −2".</p>
+                <p class="evidence"><b>Internship</b>&emsp;Two of my own changes to the LLM output format had increased response parse failures from 8 → 364 and from 2 → 29. I reverted them and traced both to a common cause: the calls did not enforce the JSON schema.</p>
+              </div>
+              <div class="principle reveal">
+                <h3>Write decisions down</h3>
+                <p>Before implementing, I write the design options, and why I rejected the ones I didn't pick, in an ADR (architecture decision record).</p>
+                <p class="evidence"><b>shirube</b>&emsp;99 ADRs (as of November 8, 2026). The 3 improvements I rejected are recorded too, with their numbers and reasons.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="fixes" aria-labelledby="h-fixes">
+            <h2 id="h-fixes"><span class="idx">02</span>Examples of fixes</h2>
+            <p>Besides improving accuracy, I also fix errors that have made it into the production store data. When I find one error, I count the stores affected by the same cause and fix them, and I make sure the same error can't get in again on the ingestion and generation side.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Error</th><th scope="col">What I fixed</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Wrong opening dates</th><td>Article publish dates and the opening dates of shopping facilities were being taken as the store's opening date. I removed date elements and added a guard that rejects facility opening dates, plus an exclusion for corporate-registry sites (45.7% → 90.4% in internal accuracy validation)</td></tr>
+                  <tr><th scope="row">Ingestion erasing correct values</th><td>In the bulk store ingestion API (Next.js), I distinguished "not fetched yet (null)" from "none (empty array)" so that failing to fetch a value no longer erases the existing one. Values that were corrected by hand and locked are not overwritten either</td></tr>
+                  <tr><th scope="row">Business hours with every day closed</th><td>Reset the 102 existing records to empty and added a guard that rejects the same value at ingestion</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>Accuracy of the LLM pipeline that extracts store attributes (May–July 2026)</h3>
+            <p>I sorted the errors in opening date, seat count, parking and payment methods into types and addressed each type (e.g. confusing an article's publish date or the host facility's opening date with the store's, wrongly taking dates from corporate-registry sites, and missing full-width digits).</p>
+            <div class="table-wrap">
+              <table>
+                <caption>Internal accuracy validation figures (scored separately from operating-company identification; population and timing differ by property)</caption>
+                <thead><tr><th scope="col">Property</th><th scope="col" class="n">Precision before → after</th><th scope="col" class="n">Coverage before → after</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Opening date</th><td class="n">45.7 → 90.4%</td><td class="n">28.7 → 70.0%</td></tr>
+                  <tr><th scope="row">Seat count</th><td class="n">73.0 → 94.0%</td><td class="n">67.0 → 80.8%</td></tr>
+                  <tr><th scope="row">Parking</th><td class="n">75.0 → 91.4%</td><td class="n">54.3 → 72.5%</td></tr>
+                  <tr><th scope="row">Payment methods</th><td class="n">47.0 → 90.8%</td><td class="n">32.4 → 78.0%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-note">Moved search to an API at about 1/17 the unit price, cutting search cost per store from ¥1.4 to ¥0.08.</p>
+          </section>
+
+          <section id="prevent" aria-labelledby="h-prevent">
+            <h2 id="h-prevent"><span class="idx">03</span>Fix it, then block it at the entry point</h2>
+            <p><strong>Every fix to existing data ships together with a guard against recurrence.</strong> When I find an error, I count how many stores share the same cause and correct the existing data with a fix batch. At the same time, I add a guard at ingestion that rejects the same error, and fix the extraction or judgment logic that produced it.</p>
+            <ol class="flow" style="--n:5" aria-label="Flow for fixing errors and preventing recurrence">
+              <li><b>Measure the scope</b>Find every store with the same cause</li>
+              <li><b>Fix existing data</b>A fix batch</li>
+              <li><b>Block it at the entry point</b>A guard at ingestion</li>
+              <li><b>Fix the source</b>Extraction and judgment logic</li>
+              <li><b>Compare before and after</b>Both what got fixed and any new errors</li>
+            </ol>
+            <p style="margin-top:1.2em">So far I've fixed these the same way: phone number formats (forwarding numbers, extensions, +81), store names that were just a place name or had an address mixed in, coordinates, business hours with every day closed, opening dates with dropped digits, business types that shouldn't be treated as stores, and large numbers of stores linked to a single URL.</p>
+          </section>
+
+          <section id="causes" aria-labelledby="h-causes">
+            <h2 id="h-causes"><span class="idx">04</span>Count errors by cause</h2>
+            <p><strong>Let the counts decide where to fix.</strong> The judgment records keep the stage that dropped a value and the evidence it used, the reasons the LLM rejected each candidate, and the actual type of any exception, so errors are sorted mechanically into four causes. Since I can see how many cases each fix would move, I start where the count is highest.</p>
+            <ul class="chips" aria-label="How errors are categorized">
+              <li>No evidence</li>
+              <li>Never a candidate</li>
+              <li>Dropped at judgment</li>
+              <li>Resolved to a different entity</li>
+            </ul>
+          </section>
+
+          <section id="compare" aria-labelledby="h-compare">
+            <h2 id="h-compare"><span class="idx">05</span>Compare each change before and after on the same stores</h2>
+            <p><strong>Count both what became correct and what newly went wrong.</strong> I compare before and after a change on the same stores with the same criteria, and report both in the PR, like this. Simply rerunning the same code flips the results for dozens of stores, so I compare only stores whose fetched pages were the same before and after.</p>
+            <p class="diff-example" aria-label="Example in a PR: correct plus 16, wrong minus 2"><span class="plus">Correct +16</span><span>/</span><span class="minus">Wrong −2</span></p>
+            <p style="margin-top:1em">When I broadened the search terms to reduce misses, the net result was negative, so I reverted my own change.</p>
+          </section>
+
+          <section id="rules" aria-labelledby="h-rules">
+            <h2 id="h-rules"><span class="idx">06</span>What rules decide, and what I leave to the LLM</h2>
+            <p><strong>If the condition can be written down, it's a rule; if it takes reading context, it's the LLM.</strong> Anything whose conditions can be stated clearly, such as phone number and date formats, excluding corporate-registry sites, and merging companies by corporate number, is handled with rules. Judgments that require reading context, such as in what capacity a company appears on a page (operating company, job-ad recruiter, or facility management company), go to the LLM, and I pass it the evidence it needs. The LLM writes its reasoning before its answer, and that order is pinned by tests.</p>
+            <div class="compare">
+              <div>
+                <h3>Rules</h3>
+                <p class="sub">Conditions that can be stated clearly</p>
+                <ul>
+                  <li><b>Normalizing formats</b>: phone numbers, dates</li>
+                  <li><b>Exclusion rules</b>: corporate-registry sites</li>
+                  <li><b>Entity resolution</b>: one company per corporate number</li>
+                </ul>
+              </div>
+              <div>
+                <h3>LLM</h3>
+                <p class="sub">Judgments that require reading context</p>
+                <ul>
+                  <li><b>Reading a company's role</b>: operator, recruiter, management company</li>
+                  <li><b>Passing it evidence</b>: registry, page field, domain</li>
+                  <li><b>Reason → answer order</b>: pinned by tests</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="monitoring" aria-labelledby="h-monitoring">
+            <h2 id="h-monitoring"><span class="idx">07</span>Trace the cause all the way to the monitoring gap</h2>
+            <p><strong>Why weren't stores growing? I looked at both the data and the system.</strong> When the store data seemed to have stopped growing, I checked the creation date of every row and pinned down that not a single new store had been created since a certain point. I also pointed out that daily monitoring counted only status changes, so it was built in a way that couldn't notice when collection stopped. I reconstructed the range that had been searched from the old collector's search terms, and laid out which business types hadn't been searched yet and an estimate of how many stores could be recovered.</p>
+            <ol class="flow" style="--n:4" aria-label="Order of investigation">
+              <li><b>Count creation dates</b>Across every row</li>
+              <li><b>Pin down when it stopped</b>Zero new rows created</li>
+              <li><b>Flag the monitoring gap</b>It counted only status changes</li>
+              <li><b>Propose next steps</b>Unsearched business types and expected recovery</li>
+            </ol>
+          </section>
+
+          <section id="ai" aria-labelledby="h-ai">
+            <h2 id="h-ai"><span class="idx">08</span>Working with AI</h2>
+            <p><strong>AI provides the speed; I decide what to adopt.</strong> I hand much of the investigation and implementation to Claude Code. I run separate analysis sessions in parallel, one per symptom (wrong answers, over-extraction, misses), and I write the premises every session reads: definitions, how numbers are computed, and the unit of reporting. I have the AI cite the data rows behind each conclusion, have a separate session verify it independently, and send back anything without support. Once, a bug the AI said affected 66 cases turned out, when checked, to affect 1.</p>
+            <p>I decide which conclusions to adopt, and record the reasoning, the rejected alternatives and the measured values in the PR description.</p>
+            <div class="org-chart" role="img" aria-label="Diagram of the setup: I write the definitions and how to measure; a lead session consolidates the changes and splits the work across three sessions analyzing wrong answers, over-extraction and misses; a verification session checks the conclusions and sends them back if they are wrong">
+              <div class="org-node is-me"><b>Me</b><span>Write the definitions and how to measure; decide which conclusions to adopt</span></div>
+              <span class="org-arrow" aria-hidden="true">↓</span>
+              <div class="org-node"><b>Lead</b><span>Consolidates changes; runs execution and scoring</span></div>
+              <span class="org-arrow" aria-hidden="true">↓</span>
+              <div class="org-row">
+                <div class="org-node"><b>Wrong answers</b><span>analysis</span></div>
+                <div class="org-node"><b>Over-extraction</b><span>analysis</span></div>
+                <div class="org-node"><b>Misses</b><span>analysis</span></div>
+              </div>
+              <span class="org-arrow" aria-hidden="true">↓</span>
+              <div class="org-node"><b>Verification</b><span>Checks the conclusions; sends them back if wrong</span></div>
+              <p class="org-loop">Over 100 rounds, precision 69.8% → 90.6%</p>
+            </div>
+          </section>
+
+          <section id="tools" aria-labelledby="h-tools">
+            <h2 id="h-tools"><span class="idx">09</span>Remove friction at work with tools</h2>
+            <p><strong>Starting with the tasks my team and I repeat.</strong> I built a GitHub Actions workflow that classifies merged PRs every week and posts them to Slack, made the PRs it couldn't classify visible, and added PR title conventions to the development guides of two repositories. The infrastructure for running evaluations faster (<a href="eval.html">Faster evaluation</a>) also started from the pain of waiting hours every time I tried a change.</p>
+            <ol class="flow" style="--n:3" aria-label="Weekly PR summary">
+              <li><b>Collect merged PRs</b>GitHub Actions</li>
+              <li><b>Classify by type</b>Also show PRs that can't be classified</li>
+              <li><b>Post to Slack</b>Title conventions go into the dev guides</li>
+            </ol>
+          </section>
+
+          <section id="database" aria-labelledby="h-database">
+            <h2 id="h-database"><span class="idx">10</span>Database and API design</h2>
+            <p>I also work on the production database and API (TypeScript, PostgreSQL) that receive the pipeline's output.</p>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">A</span><h3>Manual store registration: allow NULL, keep the unique constraint</h3></div>
+              <p class="case-catch">Check whether the quickest fix slips past the existing safety nets.</p>
+              <ul class="points">
+                <li>The Google Maps identifier was required and unique, but manual registration inserted the same empty string every time, so every registration after the first one failed</li>
+                <li>I rejected inserting a dummy value after finding that it would slip past three safety nets that check whether the identifier is empty, and send invalid, billed requests to an external API</li>
+                <li>PostgreSQL's UNIQUE doesn't treat NULLs as duplicates of each other, so I made the identifier nullable and kept the unique constraint</li>
+              </ul>
+              <details>
+                <summary>Read more</summary>
+                <dl>
+                  <dt>Approach</dt>
+                  <dd>The pipeline's input type required the identifier and rejected unknown keys, so I fixed the deploy order as pipeline → DB and split the work into 5 PRs. For detecting duplicate registrations, I judged it cheaper to catch resubmissions under the same store name with an exact match that the existing index can serve (matching the input in both full-width and half-width forms) than to maintain a new partial-match index over millions of rows.</dd>
+                </dl>
+              </details>
+            </div>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">B</span><h3>A social-media schema migration that never stops downstream</h3></div>
+              <p class="case-catch">Migrate so that, at every point, everything still works from the old column alone.</p>
+              <ul class="points">
+                <li>Social media accounts were stored together as an array in a single column, so a partial update that found only Instagram wiped out X</li>
+                <li>Compared with consolidating them into a single JSON column (complex to read from, and hard to enforce types in the DB), I added three per-platform columns</li>
+                <li>Downstream still reads the old column, so I kept it as a complete list, and copied the values over with an idempotent batch that can resume midway</li>
+              </ul>
+              <details>
+                <summary>Read more</summary>
+                <dl>
+                  <dt>Problem</dt>
+                  <dd>Locks and source URLs could also be held only once across all social media platforms, so a hand-corrected value got overwritten together with an update to a different platform.</dd>
+                  <dt>Approach</dt>
+                  <dd>I moved reads and writes over in this order: copy batch → admin UI → validation tool → producer side (expand / contract). I also changed the domain check used for classification from substring matching to suffix matching, correcting 1,826 misclassified URLs.</dd>
+                </dl>
+              </details>
+            </div>
+
+            <ul class="bullets">
+              <li>Address normalization gave different results across three ingestion paths; I consolidated it into one path in four stages. In the last stage, the pipeline switched to sending the address components, which made re-normalization on the DB side unnecessary.</li>
+            </ul>
+          </section>
+
+          <nav class="doc-next" aria-label="More pages">
+            <a href="eval.html"><small>← Previous</small><b>Faster evaluation</b></a>
+            <a class="is-next" href="shirube.html"><small>Next →</small><b>shirube (personal project)</b></a>
+          </nav>
+        </article>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

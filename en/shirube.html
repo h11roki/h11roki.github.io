@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>shirube (道標, "signpost"): Concept and technical design | Hiroki Takahashi</title>
+  <meta name="description" content="shirube is a web app that starts from the job you want and works out which courses to take, why, and a timetable through graduation. I improve its RAG and LLM-based course reranking with an evaluation set and statistical tests.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="shirube (道標, &quot;signpost&quot;): Concept and technical design | Hiroki Takahashi">
+  <meta property="og:description" content="Retrieves syllabi from a target job with RAG and builds a timetable with a reason for each course. Built solo, from design to production launch.">
+  <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/shirube.html">
+  <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/shirube.html">
+  <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="../assets/style.css?v=20261108g">
+  <script>document.documentElement.classList.add("js")</script>
+  <script src="../assets/main.js?v=20261108e" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html">Hiroki Takahashi <small>髙橋 浩樹</small></a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Accuracy</a></li>
+          <li><a href="eval.html">Faster evals</a></li>
+          <li><a href="workstyle.html">How I work</a></li>
+          <li><a href="shirube.html" aria-current="page">shirube</a></li>
+          <li><a href="tonari.html">tonari</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a class="lang-switch" href="../shirube.html" lang="ja" hreflang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <div class="doc-hero">
+        <p class="crumbs"><a href="index.html">Home</a> / Products / shirube</p>
+        <p class="eyebrow">Personal project · 2026.10– · Live in production</p>
+        <h1>shirube (道標, "signpost")<br>From the job you want to a timetable through graduation</h1>
+        <p class="lead">Enter a job title, and an LLM works out the skills it requires, embedding search over the syllabi gathers candidate courses, an LLM rereads the candidates and picks courses with a reason for each (RAG with LLM reranking), and the courses are laid out in a semester-by-semester timetable. I designed it alone and launched it in production. Before starting on improvements, I built an evaluation framework that measures accuracy, variation and cost, and that is what decides whether a change gets adopted.</p>
+        <div class="link-row">
+          <a class="btn btn-primary" href="https://shirube.duckdns.org">Open demo <span aria-hidden="true">↗</span></a>
+          <a class="btn" href="https://github.com/h11roki/Shirube">GitHub <span aria-hidden="true">↗</span></a>
+          <a class="ext" href="https://github.com/h11roki/Shirube/blob/main/docs/evaluation-log.md">Evaluation log</a>
+        </div>
+        <div class="stat-row">
+          <div class="mini-stat"><b>27.6% → 21.6%</b><span>Share of selected courses that are irrelevant</span></div>
+          <div class="mini-stat"><b>¥0.83</b><span>LLM cost per roadmap, the same before and after the improvements</span></div>
+          <div class="mini-stat"><b>0.52 → 0.72</b><span>Overlap between regenerated results (higher = less variation)</span></div>
+        </div>
+        <figure class="video-figure">
+          <video controls preload="none" playsinline poster="../assets/img/shirube-launch-poster.webp" width="1920" height="1080" aria-label="shirube intro video (41 seconds, with audio)">
+            <source src="../assets/video/shirube-launch.mp4" type="video/mp4">
+            <a href="../assets/video/shirube-launch.mp4">Open the intro video (MP4)</a>
+          </video>
+        </figure>
+      </div>
+
+      <div class="doc-layout">
+        <nav class="toc" aria-label="On this page" data-spy>
+          <p>Contents</p>
+          <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why">Background and goals</a></li>
+            <li><a href="#features">Key features</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#architecture">Pipeline and architecture</a></li>
+            <li><a href="#prompt">Prompts and context</a></li>
+            <li><a href="#decisions">Technology and design decisions</a></li>
+            <li><a href="#problems">Challenges and solutions</a></li>
+            <li><a href="#evaluation">Evaluation framework</a></li>
+            <li><a href="#changes">Adopted and rejected changes</a></li>
+            <li><a href="#now">Current numbers and next steps</a></li>
+          </ol>
+        </nav>
+
+        <article class="doc">
+          <section id="overview" aria-labelledby="h-overview">
+            <h2 id="h-overview"><span class="idx">01</span>Overview</h2>
+            <dl class="facts">
+              <dt>Timeline</dt>
+              <dd>October 14, 2026 – present (ongoing). Launched in production about two and a half weeks after starting</dd>
+              <dt>Team</dt>
+              <dd>Solo. Claude Code wrote most of the code; I decided the design, the evaluation criteria and which improvements to adopt, and recorded them in ADRs (99 as of November 8, 2026)</dd>
+              <dt>My role</dt>
+              <dd>All of it: planning, design, implementation, evaluation, and production infrastructure and operations</dd>
+              <dt>Stack</dt>
+              <dd>Next.js (App Router), TypeScript, Auth.js / FastAPI, SQLAlchemy (Clean Architecture) / PostgreSQL + pgvector / OpenAI API, LangChain structured output / Playwright, axe / Docker Compose, GitHub Actions, AWS EC2</dd>
+              <dt>URL</dt>
+              <dd><a class="ext" href="https://shirube.duckdns.org">https://shirube.duckdns.org</a> (you can view a sample roadmap without signing in; creating roadmaps is currently limited to test users)<br><a class="ext" href="https://github.com/h11roki/Shirube">github.com/h11roki/Shirube</a></dd>
+            </dl>
+          </section>
+
+          <section id="why" aria-labelledby="h-why">
+            <h2 id="h-why"><span class="idx">02</span>Background and goals</h2>
+            <p>When choosing courses, reading the syllabi one by one still doesn't tell you where a course will help in your future job, and you have to check timetable conflicts yourself. On top of that, jobs and courses use different vocabulary ("data scientist" vs. "probability and statistics", for example), so keyword search can't connect them.</p>
+            <p>shirube works backward from the job you want: it selects courses based on what their syllabi actually say, attaches the reason for each choice, and lays them out in a semester-by-semester timetable through graduation. The first target is my own department; I ingested 530 pages of public syllabi.</p>
+          </section>
+
+          <section id="features" aria-labelledby="h-features">
+            <h2 id="h-features"><span class="idx">03</span>Key features</h2>
+            <ul class="bullets">
+              <li>Selects the courses central to the job (<strong>core courses</strong>) and the courses they build on (<strong>foundation courses</strong>), each with a reason and a link to the original syllabus page.</li>
+              <li>Lays them out over the remaining semesters, respecting the year each course is offered to, the semester it runs in, period conflicts, and the 16-credit-per-semester cap. Viewable as a route map and as a weekly timetable.</li>
+              <li>Generation takes 10–30 seconds, so it runs as an async job; while it runs, the page shows which of the four stages it has reached and the expected wait. It keeps going even if you close the page.</li>
+              <li>For an ambiguous job title, the screen shows how it was interpreted. Courses you've already taken are remembered and excluded from the candidates. Works at phone width, with WCAG 2.2 AA as the target.</li>
+            </ul>
+            <div class="figure-pair">
+              <figure class="figure">
+                <img src="../assets/img/shirube-route.webp" width="1280" height="1290" loading="lazy" alt="A roadmap bound for Data Scientist. At the station for the third-year spring semester, courses such as Data Engineering Fundamentals and Probability and Statistics are laid out as tickets, each with a core or foundation mark, the reason it was chosen, its period, credits and a link to the syllabus">
+                <figcaption>The results screen (Data Scientist example). Each course shows whether it is a core or foundation course, why it was chosen, its period, credits and a link to the syllabus, and marks show which foundation courses connect to which core courses. A note at the top says that required courses and graduation requirements are not checked, and that the selections are made by AI and may contain errors.</figcaption>
+              </figure>
+              <figure class="figure is-phone">
+                <img src="../assets/img/shirube-progress.webp" width="600" height="1248" loading="lazy" alt="The in-progress screen. The four stages are drawn as stations, showing how far generation has progressed and an estimated wait time">
+                <figcaption>The in-progress screen (phone width). The worker's four stages are drawn as stations to show progress.</figcaption>
+              </figure>
+            </div>
+            <figure class="figure">
+              <img src="../assets/img/shirube-timetable.webp" width="1280" height="620" loading="lazy" alt="A weekly timetable for each semester, with the selected courses placed in day-and-period cells">
+              <figcaption>The weekly timetable. Courses are placed so that no periods overlap.</figcaption>
+            </figure>
+          </section>
+
+          <section id="results" aria-labelledby="h-results">
+            <h2 id="h-results"><span class="idx">04</span>Results</h2>
+            <p>I compared the original baseline with the improved configuration using interleaved runs in the same time window. Without changing the cost, irrelevant courses went down and the variation between regenerations shrank.</p>
+            <div class="table-wrap">
+              <table>
+                <caption>30 dev jobs × 3 runs, October 24, 2026, per-job permutation test</caption>
+                <thead><tr><th scope="col">Metric</th><th scope="col" class="n">Baseline</th><th scope="col" class="n">Improved</th><th scope="col" class="n">p-value</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Share of selected courses judged irrelevant (a proxy for errors)</th><td class="n">27.6%</td><td class="n good">21.6%</td><td class="n">0.023</td></tr>
+                  <tr><th scope="row">Core-course precision</th><td class="n">35.7%</td><td class="n good">42.1%</td><td class="n">0.004</td></tr>
+                  <tr><th scope="row">Overlap between regenerated results (Jaccard; higher = less variation)</th><td class="n">0.52</td><td class="n good">0.72</td><td class="n">&lt; 0.001</td></tr>
+                  <tr><th scope="row">LLM cost per roadmap</th><td class="n">¥0.83</td><td class="n">¥0.83</td><td class="n">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="margin-top:1em">Later, a change that has the model state where in the job each core course is used raised the share of core courses with a specific reason from 36.8% to 67.1% (50 dev jobs; 95% interval for the difference +17.8 to +42.7 points). Of the 9 changes whose adoption criteria I set before measuring, I adopted 6 and rejected 3 (<a href="#changes">table below</a>).</p>
+
+            <h3>Technical highlights</h3>
+            <ol class="bullets">
+              <li>Instead of an agent, a fixed four-stage pipeline: Interpret (LLM), Retrieve (embeddings), Rerank (LLM), Schedule (algorithm). This makes it possible to count which stage dropped an expected course.</li>
+              <li>Built the evaluation set (50 dev jobs, 20 holdout jobs) and the comparison tooling first, and wrote the adoption criteria in an ADR before each change, then measured.</li>
+              <li>A 3-way majority vote reduced errors and variation; the added cost was recovered by narrowing the candidates, prompt (input) caching, and reusing interpretations.</li>
+              <li>Built for public release: a daily limit, prepaid billing, structured output that cannot return a course outside the candidates, and external monitoring every 15 minutes.</li>
+            </ol>
+          </section>
+
+          <section id="architecture" aria-labelledby="h-architecture">
+            <h2 id="h-architecture"><span class="idx">05</span>Pipeline and architecture</h2>
+            <p>Rather than using an agent, I fixed recommendation as four stages: Interpret (LLM), Retrieve (embeddings), Rerank (LLM) and Schedule (algorithm). This lets me count which stage dropped an expected course.</p>
+            <p class="table-note">FastAPI (Clean Architecture), Next.js, PostgreSQL + pgvector, AWS EC2 with Docker Compose, GitHub Actions. The numbers in each box are the ADRs recording the decisions (click to read them on GitHub).</p>
+
+            <div class="arch" role="group" aria-label="Pipeline and architecture">
+              <div class="arch-row">
+                <p class="arch-label">Ingestion<small>offline</small></p>
+                <ol class="arch-cells arch-flow">
+                  <li><b>Syllabus scraping</b>Saves and parses the rendered HTML with Playwright. Joined with the timetable PDF<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0003-playwright-scraping.md">0003</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0012-timetable-source.md">0012</a></span></li>
+                  <li><b>Section-level chunks</b>One per section: overview, learning objectives, course schedule. 1,589 chunks<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0005-section-chunking.md">0005</a></span></li>
+                  <li class="is-external"><b>Embeddings</b>text-embedding-3-large, 1536 dimensions. Identical text is not re-embedded<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0015-chunk-embeddings.md">0015</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0063-search-by-skill.md">0063</a></span></li>
+                  <li class="is-store"><b>PostgreSQL + pgvector</b>Courses, chunks, embeddings. Only the course tables are moved to production</li>
+                </ol>
+              </div>
+              <div class="arch-row">
+                <p class="arch-label">Requests</p>
+                <ol class="arch-cells arch-flow">
+                  <li><b>Frontend (Next.js)</b>Sign in with Google. Forwards requests with a short-lived JWT carrying the user ID<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0027-auth-backend.md">0027</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0039-request-guard.md">0039</a></span></li>
+                  <li><b>POST /plans (FastAPI)</b>Counts the limits (3 per user per day, 30 overall, 1 in progress) inside an advisory lock<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0038-plan-quota.md">0038</a></span></li>
+                  <li class="is-store"><b>plans table (queue)</b>Saved as "queued" and returns 202. The worker claims jobs with SKIP LOCKED<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0029-plan-jobs.md">0029</a></span></li>
+                  <li><b>Results page</b>Polls the status every 2 seconds and shows stage progress and the wait time</li>
+                </ol>
+              </div>
+              <div class="arch-row">
+                <p class="arch-label">Recommendation<small>worker</small></p>
+                <ol class="arch-cells arch-flow">
+                  <li><b>① Interpret</b>gpt-5.4-mini. Turns the job title into an interpretation, an assumption and 3–6 skills. Reused per job title<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0052-reading-cache.md">0052</a></span></li>
+                  <li><b>② Retrieve</b>pgvector. Takes 20 candidates by alternating between the rankings for a whole-job query and per-skill queries. Exact search over all rows<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0063-search-by-skill.md">0063</a></span></li>
+                  <li><b>③ Rerank</b>gpt-5.4-nano × 3. Reads excerpts of the candidates and returns core and foundation courses with reasons. Called 3 times in parallel; keeps courses with 2 or more votes<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0023-foundation-links-core.md">0023</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0049-selection-votes.md">0049</a></span></li>
+                  <li><b>④ Schedule</b>My own algorithm. Packs courses greedily while respecting year, semester, period and the 16-credit cap. No LLM<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0007-greedy-timetable.md">0007</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0025-roadmap-candidates-by-semester.md">0025</a></span></li>
+                </ol>
+                <p class="arch-note"><b>Recommendation cache (7 days)</b>: if the job title and conditions, model, prompt and code fingerprint all match, ①–③ are skipped and the roadmap is built without calling the LLM. Changing the code means earlier results no longer hit<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0092-recommendation-cache.md">0092</a></span></p>
+              </div>
+              <div class="arch-row">
+                <p class="arch-label">Operations</p>
+                <ul class="arch-cells">
+                  <li><b>Build records</b>Seconds per stage, tokens, failure type. User IDs and inputs are not stored<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0087-build-records.md">0087</a></span></li>
+                  <li><b>Versioning</b>Model, vote count and instructions are switched via settings; experiment results record the settings and commit<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0048-recommendation-experiments.md">0048</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0068-selection-prompt-setting.md">0068</a></span></li>
+                  <li><b>Deploy</b>The server pulls only versions that passed all of CI. If the new version doesn't respond, it rolls back to the previous one<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0094-pull-deploy.md">0094</a></span></li>
+                  <li><b>Monitoring and cost</b>An external health check every 15 minutes (DB, queue, OpenAI balance). Prepaid<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0075-production-setup.md">0075</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0095-health-monitor.md">0095</a></span></li>
+                </ul>
+              </div>
+              <p class="arch-legend"><span><i class="lg-solid"></i>Every solid box is my own design</span><span><i class="lg-dashed"></i>External API (OpenAI)</span><span><i class="lg-store"></i>Data store</span></p>
+            </div>
+
+            <figure class="figure">
+              <picture>
+                <source srcset="../assets/img/shirube-architecture-dark.webp" media="(prefers-color-scheme: dark)">
+                <img src="../assets/img/shirube-architecture.webp" width="1600" height="1284" loading="lazy" alt="Architecture diagram. From the user's browser through Caddy, Next.js and FastAPI to PostgreSQL (pgvector). The worker takes jobs from the queue and calls OpenAI's gpt-5.4-mini, text-embedding-3-large and gpt-5.4-nano. Everything runs on Docker Compose on AWS EC2, and GitHub Actions handles CI, image builds and monitoring">
+              </picture>
+              <figcaption>Architecture diagram. Runs on Docker Compose on AWS EC2 (t4g.small), with HTTPS via Caddy. GitHub Actions handles CI, image builds and external monitoring.</figcaption>
+            </figure>
+          </section>
+
+          <section id="prompt" aria-labelledby="h-prompt">
+            <h2 id="h-prompt"><span class="idx">06</span>Prompt and context design</h2>
+            <p>Both calls use LangChain structured output (json_schema, strict).</p>
+            <div class="case">
+              <div class="case-head"><span class="idx">①</span><h3>Interpret (gpt-5.4-mini)</h3></div>
+              <dl>
+                <dt>Input</dt>
+                <dd>A role (career advisor). A rule: take jobs that the department's courses directly prepare for at face value, and read only narrowly specialized roles more broadly. The user's job title.</dd>
+                <dt>Output</dt>
+                <dd>An interpretation of the job title, an assumption (null if none), and 3–6 skills (noun phrases of up to 20 characters).</dd>
+                <dt>Approach</dt>
+                <dd>Skills are written as the names of fields taught in courses rather than product names ("how the web works and programming" rather than React), which pulls search queries toward the language of syllabi. If the model rephrases the job title without stating an assumption, code restores the original job title.</dd>
+              </dl>
+            </div>
+            <div class="case">
+              <div class="case-head"><span class="idx">③</span><h3>Rerank (gpt-5.4-nano × 3)</h3></div>
+              <dl>
+                <dt>Input</dt>
+                <dd>Definitions of core and foundation courses and the order to select them in. The job, the assumption and the skills. Excerpts of the 20 candidates (overview 450 characters, learning objectives 250 characters, per-session topics 350 characters).</dd>
+                <dt>Output</dt>
+                <dd>Course names, and the core course each foundation course leads to, are restricted to an enum of the candidates. Reasons are at most 80 characters.</dd>
+                <dt>Approach</dt>
+                <dd>Excerpts are cut exactly the same way as for the judges who built the ground truth, so differences in input don't leak into the evaluation. The model may not write anything that isn't in the excerpts. The second vote is delayed by 0.5 seconds so that it hits the prompt cache.</dd>
+              </dl>
+            </div>
+          </section>
+
+          <section id="decisions" aria-labelledby="h-decisions">
+            <h2 id="h-decisions"><span class="idx">07</span>Technology and design decisions</h2>
+            <p>Every one of these was decided from measurements or from the results of trying it.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Decision</th><th scope="col">Rationale</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">A workflow with fixed stages, not an agent</th><td>With an agent, you can't separate out and measure where it went wrong. Each stage has its own metrics. And because LLM output is never used for tool calls or DB queries, the impact of prompt injection stops at the text on the screen</td></tr>
+                  <tr><th scope="row">Narrow with retrieval, then have the LLM reread</th><td>About 20% of the top 10 retrieval results are judged irrelevant. When the LLM reads the content, it can drop them and write reasons grounded in evidence. Having it read every course would make the input 5× larger or more, and it couldn't be extended to other departments</td></tr>
+                  <tr><th scope="row">A different model per stage</th><td>For Interpret, on 4 ambiguous job titles mini stated the assumption in 4 and nano in 1, so mini. For Rerank, over 10 jobs × 2 runs nano was on par with or better than mini at about a quarter of the cost, so nano</td></tr>
+                  <tr><th scope="row">Search with per-skill queries (query decomposition)</th><td>Most of the misses came from skills being diluted within a single query. In an interleaved comparison over 50 jobs, the irrelevant share fell from 23.0% to 15.1% (p = 0.001)</td></tr>
+                  <tr><th scope="row">Greedy timetabling, async generation</th><td>When an LLM builds the timetable, periods overlap. With synchronous generation, results get saved after the page has already timed out, and regenerating doubles the cost</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="problems" aria-labelledby="h-problems">
+            <h2 id="h-problems"><span class="idx">08</span>Challenges and solutions</h2>
+            <div class="case">
+              <div class="case-head"><span class="idx">01</span><h3>LLM answers varied, and irrelevant courses got mixed in</h3></div>
+              <dl>
+                <dt>Problem</dt>
+                <dd>With the original baseline, 23% of courses were irrelevant and the overlap between regenerations was 0.45.</dd>
+                <dt>Solution</dt>
+                <dd>Calling Rerank 3 times in parallel and keeping only courses with 2 or more votes cut the irrelevant share to 10%, but the cost rose from ¥0.81 to ¥1.57. So I narrowed the candidates from 30 to 20 (¥1.14), delayed the second vote to raise the prompt cache hit rate from 50% to 63% (¥1.01), and reused job interpretations. In interleaved runs against the original baseline, the cost stayed at ¥0.83 while the irrelevant share went from 27.6% to 21.6% and the overlap from 0.52 to 0.72.</dd>
+              </dl>
+            </div>
+            <div class="case">
+              <div class="case-head"><span class="idx">02</span><h3>A public launch risked someone running up the costs</h3></div>
+              <dl>
+                <dt>Problem</dt>
+                <dd>At first, failed roadmaps didn't count toward the daily limit. During a review I realized that by mixing instructions into the job title to make generation fail on purpose, someone could spend without any limit.</dd>
+                <dt>Solution</dt>
+                <dd>Failures now count toward the limit. The output is restricted to candidate courses by an enum, and a roadmap is visible only to its owner (other users' roadmaps return 404), so the effect of injected instructions stays on the submitter's own screen. I ran 3 job titles with injected instructions and recorded that the model didn't follow them and output neither courses outside the candidates nor the API key; I rerun them every time I change the instructions or the model.</dd>
+              </dl>
+            </div>
+          </section>
+
+          <section id="evaluation" aria-labelledby="h-evaluation">
+            <h2 id="h-evaluation"><span class="idx">09</span>Evaluation framework</h2>
+            <p>LLM output always looks plausible, so I built this before any improvements, to decide what to adopt by the numbers rather than by feel.</p>
+            <ol class="flow" style="--n:5" aria-label="Evaluation flow">
+              <li><b>Evaluation set</b>50 dev jobs, 20 holdout jobs</li>
+              <li><b>Interleaved runs</b>Alternate the two configurations by job and by run</li>
+              <li><b>Compare</b>Permutation tests and intervals. Also count which stage dropped each course</li>
+              <li><b>ADR</b>Write the adoption criteria before measuring. Record rejections too</li>
+              <li><b>Holdout</b>Run once, only after the change is final; look only at the means and the test</li>
+            </ol>
+            <h3>How the ground truth is built</h3>
+            <p>There is no ground truth for each job, so three Claude subagents (an engineer who does hiring, a faculty member who designs the curriculum, and a third-year student thinking about their career) independently labeled the candidate courses as "central", "foundational" or "irrelevant", and I took the majority vote (LLM-as-a-Judge). That gives 151 expected courses in dev and 58 in holdout. The judges come from a different model family than the OpenAI models the app uses.</p>
+            <p>The same three judges rated the reason text on a three-level scale: specific, vague, or none (agreement on core-course reasons: Fleiss' κ 0.80). To make this cheaper to run, I also built judges with gpt-5.4-nano and mini, but on 75 holdout items their Cohen's κ was 0.54, short of the 0.6 threshold I had set in advance, so I didn't adopt them.</p>
+            <p>Holdout jobs are flagged in the evaluation set, and the experiment tooling doesn't output per-job results for them, which prevents me from accidentally looking at their contents.</p>
+
+            <h3>Fixes to the evaluation itself</h3>
+            <ul class="bullets">
+              <li><strong>A/A tests showed false differences.</strong> Even between identical configurations, bootstrap intervals reported a significant difference 10% of the time (twice the nominal 5%). Switching to a per-job permutation test brought it back within 5%.</li>
+              <li><strong>Results shifted with the time of the run.</strong> With the same configuration and code, runs at different times moved the irrelevant share by about 9 points. Interleaving the two configurations by job and by run removed the time-of-run drift from the difference.</li>
+              <li><strong>I was overfitting to the dev set.</strong> A retrieval improvement raised candidate recall by 6.4 points on the 30 jobs I had looked at while deciding on the change, but lowered it by 1.2 points on the 20 jobs added later. So I decided to keep a separate holdout set aside.</li>
+            </ul>
+          </section>
+
+          <section id="changes" aria-labelledby="h-changes">
+            <h2 id="h-changes"><span class="idx">10</span>Adopted and rejected changes</h2>
+            <p>These are changes I tried after setting the criteria before measuring. Each row was measured at a different time and on a different number of jobs, so only the before and after within each row are comparable.</p>
+            <div class="table-wrap">
+              <table class="wide">
+                <thead><tr><th scope="col">Change</th><th scope="col">Target</th><th scope="col">Result</th><th scope="col">Decision</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Make Rerank a 3-way majority vote</th><td class="aim">Irrelevant</td><td>Irrelevant 23% → 10% (significant). Cost about 1.9×</td><td><span class="verdict yes">Adopted</span><br>Cost recovered separately</td></tr>
+                  <tr><th scope="row">Reuse job interpretations</th><td class="aim">Variation and cost</td><td>Overlap 0.56 → 0.73 (significant). For already-cached jobs, ¥1.00 → ¥0.59</td><td><span class="verdict yes">Adopted</span></td></tr>
+                  <tr><th scope="row">Search with per-skill queries</th><td class="aim">Candidate recall</td><td>Candidate recall +3.3 points over 50 jobs (p = 0.391, not significant). Irrelevant 23.0% → 15.1% (p = 0.001)</td><td><span class="verdict yes">Adopted</span><br>No regression, fewer errors</td></tr>
+                  <tr><th scope="row">Add the department's fields to the Interpret instructions</th><td class="aim">Candidate recall</td><td>Candidate recall 0.910 → 0.865 (p = 0.105). The model copied the field terms, crowding out job-specific skills</td><td><span class="verdict no">Rejected</span></td></tr>
+                  <tr><th scope="row">Don't select borderline courses</th><td class="aim">Irrelevant</td><td>Irrelevant: dev 16.4% → 10.6% (p = 0.004), holdout 15.0% → 12.2% (p = 0.210), so half the effect</td><td><span class="verdict yes">Adopted</span><br>Later replaced by the next row</td></tr>
+                  <tr><th scope="row">Select any course that helps even a little, even if borderline</th><td class="aim">Broader roadmaps</td><td>Core-course count: dev 4.60 → 5.44, holdout 4.35 → 6.15 (significant). Irrelevant 12.3% → 16.4%</td><td><span class="verdict yes">Adopted</span><br>Prioritized coverage. Also recorded that the adoption criteria were too lenient</td></tr>
+                  <tr><th scope="row">Keep a course if even 1 of the 3 votes selects it</th><td class="aim">More core courses</td><td>Core courses 5.66 → 6.20 (p = 0.076). Irrelevant 13.4% → 19.7% (p = 0.003)</td><td><span class="verdict no">Rejected</span></td></tr>
+                  <tr><th scope="row">Have core-course reasons state which course content is used where in the job</th><td class="aim">Reason specificity</td><td>Core courses with a specific reason 36.8% → 67.1% (interval +17.8 to +42.7). Irrelevant did not worsen; core-course count 5.74 → 5.14 (significant). My read is that it stopped making core courses out of courses whose reason is hard to write</td><td><span class="verdict yes">Adopted</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-note">In addition, the cheaper judges for rating reasons (gpt-5.4-nano, mini) fell short of the agreement threshold and were not adopted (09 above).</p>
+          </section>
+
+          <section id="now" aria-labelledby="h-now">
+            <h2 id="h-now"><span class="idx">11</span>Current numbers and next steps</h2>
+            <div class="table-wrap">
+              <table>
+                <caption>One run each, after the change that broadened course selection (November 4, 2026)</caption>
+                <thead><tr><th scope="col">Metric</th><th scope="col" class="n">50 dev jobs</th><th scope="col" class="n">20 holdout jobs</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Irrelevant share of selected courses</th><td class="n">16.4%</td><td class="n">17.5%</td></tr>
+                  <tr><th scope="row">Share of expected courses selected as core courses</th><td class="n">67.5%</td><td class="n">89.7%</td></tr>
+                  <tr><th scope="row">Core-course precision</th><td class="n">37.5%</td><td class="n">42.3%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-note">The 89.7% on holdout is a single run that jumped from the previous configuration run at the same time (69.0%), and includes run-to-run variation. After the last change in the table in section 10, dev is at 15.1%, 63.6% and 37.4% (holdout not yet measured).</p>
+
+            <h3>Known gaps</h3>
+            <ul class="bullets">
+              <li>The ground truth is a majority vote of three LLM judges; agreement with human judgments hasn't been measured yet.</li>
+              <li>No students have used it yet, so I haven't verified that it's actually useful.</li>
+              <li>Core-course precision is low, at 37–42%, because I prioritized coverage and made core-course selection broader.</li>
+              <li>Required courses, graduation requirements and prerequisite ordering aren't checked, and it covers only one department.</li>
+            </ul>
+
+            <h3>Next steps</h3>
+            <ul class="bullets">
+              <li>Have students and faculty in the department label a subset, and measure agreement (κ) with the Claude judges.</li>
+              <li>Of the 151 expected courses, 13% are dropped at Rerank, 12% at Interpret and 3% at Retrieve. Next I'll fix the variation in Interpret, but continuing to tune on the same 50 jobs would overfit, so I'll add unseen jobs before verifying.</li>
+              <li>Have students use it during course registration (March–April), and look at how often they regenerate and which courses they mark as already taken, together with the build records.</li>
+              <li>Add required courses and graduation requirements, and switch timetabling to integer programming. First, measure how many roadmaps the greedy approach can't make meet the requirements.</li>
+            </ul>
+
+            <h3>Outlook</h3>
+            <ul class="bullets">
+              <li><strong>Expand to other departments, faculties and universities.</strong> Right now it covers only my own department. I chose to narrow the candidates with retrieval before the LLM rereads them because having it read every course would make the input 5× larger or more and rule out expansion; it is built on the assumption that it will expand.</li>
+              <li><strong>I'd also like to start a mobile app.</strong> The current web version already works at phone width, but I want to deliver it as an app too.</li>
+            </ul>
+          </section>
+
+          <nav class="doc-next" aria-label="More pages">
+            <a href="workstyle.html"><small>← Previous</small><b>How I work</b></a>
+            <a class="is-next" href="tonari.html"><small>Next →</small><b>tonari (JPHACKS 2026)</b></a>
+          </nav>
+        </article>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

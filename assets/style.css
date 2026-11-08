@@ -197,7 +197,7 @@ p + p { margin-top: 1em; }
 .site-nav a[aria-current="true"],
 .site-nav a[aria-current="page"] { color: var(--accent-ink); background: var(--accent-soft); }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .site-header .wrap { height: auto; flex-direction: column; align-items: stretch; gap: 0; padding-top: 10px; }
   .site-nav { margin: 0 calc(var(--gutter) * -1); overflow-x: auto; scrollbar-width: none; }
   .site-nav::-webkit-scrollbar { display: none; }
@@ -205,6 +205,19 @@ p + p { margin-top: 1em; }
   .site-nav a { padding: 4px 10px; font-size: 13px; }
   html { scroll-padding-top: 110px; }
 }
+
+/* 言語の切り替え */
+.site-nav a.lang-switch {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px solid var(--line-strong);
+  margin-left: 6px;
+}
+.site-nav a.lang-switch:lang(ja) { font-family: var(--font-sans); }
+
+/* 英語のページは行間と字間を詰める */
+html[lang="en"] body { line-height: 1.7; letter-spacing: 0; }
+html[lang="en"] .hero-name { letter-spacing: 0.01em; }
 
 /* ---------- buttons / links ---------- */
 
@@ -318,7 +331,7 @@ p + p { margin-top: 1em; }
 .hero-facts { margin: 28px 0 0; display: grid; gap: 8px; }
 .hero-facts > div { display: flex; flex-wrap: wrap; gap: 2px 16px; align-items: baseline; }
 .hero-facts dt { width: 6.5em; flex: none; font-size: 13px; color: var(--ink-3); }
-.hero-facts dd { margin: 0; font-size: 15px; color: var(--ink); }
+.hero-facts dd { flex: 1 1 18em; min-width: 0; margin: 0; font-size: 15px; color: var(--ink); }
 .hero .lead {
   margin-top: 24px;
   max-width: 40em;

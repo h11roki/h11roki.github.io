@@ -1,4 +1,5 @@
 (() => {
+  const isEn = document.documentElement.lang === "en";
   const header = document.querySelector(".site-header");
   if (header) {
     const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
@@ -58,7 +59,7 @@
       const text = button.getAttribute("data-copy");
       try {
         await navigator.clipboard.writeText(text);
-        if (status) status.textContent = "コピーしました";
+        if (status) status.textContent = isEn ? "Copied" : "コピーしました";
       } catch {
         if (status) status.textContent = text;
       }
@@ -72,8 +73,13 @@
     let userPaused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const syncButton = () => {
       if (!button) return;
-      button.textContent = video.paused ? "再生" : "一時停止";
-      button.setAttribute("aria-label", video.paused ? "動画を再生" : "動画を一時停止");
+      if (isEn) {
+        button.textContent = video.paused ? "Play" : "Pause";
+        button.setAttribute("aria-label", video.paused ? "Play video" : "Pause video");
+      } else {
+        button.textContent = video.paused ? "再生" : "一時停止";
+        button.setAttribute("aria-label", video.paused ? "動画を再生" : "動画を一時停止");
+      }
     };
     const play = () => {
       video.preload = "auto";

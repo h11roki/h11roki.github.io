@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hiroki Takahashi | Portfolio</title>
+  <meta name="description" content="Portfolio of Hiroki Takahashi, a 3rd-year undergraduate in the Department of Electronic and Computer Engineering, College of Science and Engineering, Ritsumeikan University (class of 2028). Covers improving the accuracy of a production LLM pipeline and building its evaluation system during a long-term internship, the personal project shirube, and tonari from JPHACKS 2026.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hiroki Takahashi | Portfolio">
+  <meta property="og:description" content="3rd-year undergraduate, College of Science and Engineering, Ritsumeikan University. Improving the accuracy of a production LLM pipeline and building its evaluation system; a RAG-based web app built as a personal project.">
+  <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/">
+  <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/">
+  <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="../assets/style.css?v=20261108g">
+  <script>document.documentElement.classList.add("js")</script>
+  <script src="../assets/main.js?v=20261108e" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="#top">Hiroki Takahashi <small>髙橋 浩樹</small></a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <ul>
+          <li><a href="index.html" aria-current="page">Home</a></li>
+          <li><a href="work.html">Accuracy</a></li>
+          <li><a href="eval.html">Faster evals</a></li>
+          <li><a href="workstyle.html">How I work</a></li>
+          <li><a href="shirube.html">shirube</a></li>
+          <li><a href="tonari.html">tonari</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a class="lang-switch" href="../index.html" lang="ja" hreflang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ Hero ============ -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="wrap">
+        <div class="hero-intro">
+          <p class="hero-roman">髙橋 浩樹</p>
+          <h1 class="hero-name" id="hero-title">Hiroki Takahashi</h1>
+          <dl class="hero-facts">
+            <div><dt>University</dt><dd>3rd-year undergraduate, Department of Electronic and Computer Engineering, College of Science and Engineering, Ritsumeikan University (expected graduation March 2028)</dd></div>
+            <div><dt>Internship</dt><dd>Baseconnect Inc., AI engineer (since April 2026)</dd></div>
+          </dl>
+          <p class="lead">Since the spring of my third year, I've been a long-term intern at Baseconnect, responsible for improving the accuracy of a production LLM pipeline that generates data for a B2B company database used by sales teams, and for the system that evaluates it. As a personal project, I built <a href="shirube.html">shirube</a>, a web app that plans your courses around the career you want, single-handedly from design through production release.</p>
+          <div class="hero-actions">
+            <a class="btn" href="https://github.com/h11roki">
+              <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              GitHub
+            </a>
+            <a class="btn btn-primary" href="#contact">Get in touch</a>
+          </div>
+        </div>
+
+        <ul class="entry-list" aria-label="Read more">
+          <li>
+            <a href="work.html">
+              <span class="entry-kind">Work / Internship</span>
+              <span class="entry-title">Improving a production LLM pipeline's accuracy<span>Precision in identifying stores' operating companies: 69.8% → 90.6%. The most challenging engineering work I've done</span></span>
+              <span class="entry-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+          <li>
+            <a href="eval.html">
+              <span class="entry-kind">Work / Internship</span>
+              <span class="entry-title">Faster evaluation<span>Cut LLM evaluation on 900 stores from 2–3 hours to about 8 minutes</span></span>
+              <span class="entry-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+          <li>
+            <a href="workstyle.html">
+              <span class="entry-kind">Work / Internship</span>
+              <span class="entry-title">How I work<span>What I value, how I fix data errors, and how I split work with AI</span></span>
+              <span class="entry-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+          <li>
+            <a href="about.html">
+              <span class="entry-kind">Profile</span>
+              <span class="entry-title">Background &amp; skills<span>My path so far and the technologies I use</span></span>
+              <span class="entry-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 01 Products ============ -->
+    <section class="section" id="projects" aria-labelledby="projects-title">
+      <div class="wrap">
+        <h2 class="section-label" id="projects-title"><b>01</b>Products</h2>
+
+        <div class="projects">
+          <article class="feature reveal" aria-labelledby="p-shirube">
+            <div class="feature-media-wrap">
+              <a class="feature-media" href="shirube.html" tabindex="-1" aria-hidden="true">
+                <video class="js-autoplay" muted loop playsinline preload="none" poster="../assets/img/shirube-loop-poster.webp" width="1280" height="720">
+                  <source src="../assets/video/shirube-loop.mp4" type="video/mp4">
+                </video>
+              </a>
+              <button class="feature-toggle" type="button">Play</button>
+            </div>
+            <div class="feature-body">
+              <div>
+                <p class="project-meta"><span>Personal project</span><span>2026.10–</span><span class="live">Live</span></p>
+                <h3 id="p-shirube"><a href="shirube.html">shirube <small>道標</small></a></h3>
+                <p class="project-catch">A web app that starts from the career you want and plans which courses to take, why, and your timetable through graduation</p>
+              </div>
+              <div>
+                <p class="project-desc">Enter a job title: an LLM infers the skills it requires, embedding search over the syllabi gathers candidate courses, an LLM re-reads the candidates and picks courses with reasons, and the app lays them out in a semester-by-semester timetable. Before starting any improvements, I built an evaluation system that measures precision, run-to-run variance, and cost, and used it to decide whether to adopt each change.</p>
+                <ul class="tags" aria-label="Technologies used">
+                  <li>Next.js</li><li>FastAPI</li><li>PostgreSQL + pgvector</li><li>OpenAI API</li><li>AWS EC2</li><li>Docker Compose</li><li>GitHub Actions</li>
+                </ul>
+                <div class="link-row">
+                  <a class="more" href="shirube.html">Concept and design in detail</a>
+                  <a href="shirube.html">Demo video (with audio)</a>
+                  <a class="ext" href="https://shirube.duckdns.org">Live demo</a>
+                  <a class="ext" href="https://github.com/h11roki/Shirube">GitHub</a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="project reveal" aria-labelledby="p-tonari">
+            <a class="project-media is-phone" href="tonari.html" tabindex="-1" aria-hidden="true">
+              <img src="../assets/img/tonari.webp" width="320" height="585" alt="" loading="lazy">
+            </a>
+            <div class="project-body">
+              <p class="project-meta"><span>Team project (4 members)</span><span>JPHACKS 2026</span><span>2026.10</span></p>
+              <h3 id="p-tonari"><a href="tonari.html">tonari</a></h3>
+              <p class="project-catch">An AI tutor that watches your work, speaks up only when you're stuck, and never gives away the answer</p>
+              <p class="project-desc">A smartphone watches you write on paper, and only when your hand stops does it voice the next step, not the answer. I handled the API server (state management, hint generation, answer-leak checks), detecting when the writing hand goes still, and deployment.</p>
+              <ul class="tags" aria-label="Technologies used">
+                <li>Next.js</li><li>FastAPI</li><li>Gemini API</li><li>VOICEVOX</li><li>Web Speech API</li><li>OpenAPI</li>
+              </ul>
+              <div class="link-row">
+                <a class="more" href="tonari.html">What I built, in detail</a>
+                <a class="ext" href="https://youtube.com/shorts/04hRV0uHNMU">Demo video</a>
+                <a class="ext" href="https://github.com/jphacks/os_2601">GitHub</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 Contact ============ -->
+    <section class="section" id="contact" aria-labelledby="contact-title">
+      <div class="wrap">
+        <h2 class="section-label" id="contact-title"><b>02</b>Contact</h2>
+        <dl class="contact-list">
+          <div>
+            <dt>Email</dt>
+            <dd>
+              <a href="mailto:hiroki030434@gmail.com">hiroki030434@gmail.com</a>
+              <button class="copy-btn" type="button" data-copy="hiroki030434@gmail.com" aria-describedby="copy-status">Copy</button>
+              <span class="copy-status" id="copy-status" role="status" aria-live="polite"></span>
+            </dd>
+          </div>
+          <div>
+            <dt>GitHub</dt>
+            <dd><a href="https://github.com/h11roki">github.com/h11roki</a></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>

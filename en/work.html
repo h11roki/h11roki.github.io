@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My hardest engineering project: Improving the accuracy of an LLM that identifies operating companies | Hiroki Takahashi</title>
+  <meta name="description" content="During a long-term internship at Baseconnect, I raised the precision of a production LLM pipeline that identifies each store's operating company from 69.8% to 90.6%, then realized I had been overfitting to the evaluation and rebuilt it.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="My hardest engineering project | Hiroki Takahashi">
+  <meta property="og:description" content="I counted errors by pipeline stage, separated the effect of each change from run-to-run variance, and rebuilt the evaluation after realizing I had been overfitting to it.">
+  <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/work.html">
+  <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/work.html">
+  <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="../assets/style.css?v=20261108g">
+  <script>document.documentElement.classList.add("js")</script>
+  <script src="../assets/main.js?v=20261108e" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html">Hiroki Takahashi <small>髙橋 浩樹</small></a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html" aria-current="page">Accuracy</a></li>
+          <li><a href="eval.html">Faster evals</a></li>
+          <li><a href="workstyle.html">How I work</a></li>
+          <li><a href="shirube.html">shirube</a></li>
+          <li><a href="tonari.html">tonari</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a class="lang-switch" href="../work.html" lang="ja" hreflang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <div class="doc-hero">
+        <p class="crumbs"><a href="index.html">Home</a> / Work / Improving an LLM pipeline's accuracy</p>
+        <p class="eyebrow">Baseconnect Inc. · Long-term internship · The hardest technical project I've worked on</p>
+        <h1>Improving the accuracy of an LLM pipeline that identifies each store's operating company, and rebuilding its evaluation</h1>
+        <p class="lead">In a B2B company database used by sales teams, the contact sales reps need is not the store itself but the company that operates it. I improved the production pipeline that identifies operating companies through web research and an LLM. Returning the wrong company sends sales reps to a company where no one can make the decision, so my top priority was not adding errors.</p>
+        <div class="stat-row">
+          <div class="mini-stat"><b>69.8% → 90.6%</b><span>Precision (879 stores used for tuning)</span></div>
+          <div class="mini-stat"><b>63.6% → 77.9%</b><span>Coverage (200 stores never used for tuning; compared with the values that were in production)</span></div>
+          <div class="mini-stat"><b>136 → 44</b><span>Cases where a wrong company was returned (879 stores)</span></div>
+        </div>
+      </div>
+
+      <div class="doc-layout">
+        <nav class="toc" aria-label="On this page" data-spy>
+          <p>Contents</p>
+          <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#background">The project</a></li>
+            <li><a href="#result">Results</a></li>
+            <li><a href="#challenges">Challenges and how I tackled them</a></li>
+            <li><a href="#learned">What I learned</a></li>
+          </ol>
+        </nav>
+
+        <article class="doc">
+          <section id="overview" aria-labelledby="h-overview">
+            <h2 id="h-overview"><span class="idx">01</span>Overview</h2>
+            <dl class="facts">
+              <dt>Period</dt>
+              <dd>Aug–Oct 2026 (the internship itself started in April 2026)</dd>
+              <dt>Tech</dt>
+              <dd>Python, Dagster, an in-house GPU-hosted LLM (a Qwen-family 35B MoE), morphological analysis (UniDic), search APIs and crawling, PostgreSQL, AWS (SQS, S3), Parquet and DuckDB, GitHub Actions, Claude Code</dd>
+              <dt>Team</dt>
+              <dd>A data platform team of about 10 engineers. One full-time engineer and I owned the store data (millions of records) as a pair. QA created the labeled ground truth, and full-time engineers did code review. Changes were split into small PRs with tests, reviewed, and then merged</dd>
+              <dt>Role</dt>
+              <dd>Mainly responsible for improving the accuracy of the existing production pipeline and rebuilding its evaluation (analysis, design, implementation, validation). I also defined the scoring criteria myself</dd>
+              <dt>Reference URL</dt>
+              <dd>Not public, as this is internal code (internal system names and store names are withheld)</dd>
+            </dl>
+          </section>
+
+          <section id="background" aria-labelledby="h-background">
+            <h2 id="h-background"><span class="idx">02</span>The project</h2>
+            <p>I was tasked with improving the accuracy of a production pipeline that, for each store, searches the web, has an LLM read the retrieved pages, and narrows the operating company down to a single corporate number (Japan's 13-digit corporate ID). The pipeline supplies operating companies for hundreds of thousands of stores in the database. The target was 95% for both precision and coverage.</p>
+            <ol class="flow" style="--n:5" aria-label="Pipeline steps">
+              <li><b>Search and fetch</b>Search the web by store name and address, and fetch the pages</li>
+              <li><b>Extract candidates</b>Pull candidate company names out of the pages</li>
+              <li><b>LLM judgment</b>Decide which candidate is the operating company</li>
+              <li><b>Entity resolution</b>Resolve the name to a single company by corporate number</li>
+              <li><b>Registry check</b>Exclude companies that have closed or merged</li>
+            </ol>
+          </section>
+
+          <section id="result" aria-labelledby="h-result">
+            <h2 id="h-result"><span class="idx">03</span>Results</h2>
+            <p>On 200 test stores never used for tuning, I compared against the values currently in production (how the sets were split is described in 04 below). Precision stayed about the same, while coverage rose by 14 points.</p>
+            <div class="table-wrap">
+              <table class="wide">
+                <caption>Stores sampled from production, split into three sets and compared with the values that were in production</caption>
+                <thead>
+                  <tr><th scope="col">Set</th><th scope="col" class="n">Precision (new)</th><th scope="col" class="n">Coverage (new)</th><th scope="col" class="n">Precision (production)</th><th scope="col" class="n">Coverage (production)</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">Test (never looked at)</th><td class="n">89.6%</td><td class="n good">77.9%</td><td class="n">89.1%</td><td class="n">63.6%</td></tr>
+                  <tr><th scope="row">Validation (looked at counts only)</th><td class="n">89.7%</td><td class="n good">81.8%</td><td class="n">86.4%</td><td class="n">62.1%</td></tr>
+                  <tr><th scope="row">Dev (inspected to design rules)</th><td class="n">89.6%</td><td class="n good">76.1%</td><td class="n">84.1%</td><td class="n">61.3%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-note">Counted over stores whose labeled ground truth has a company (precision = correct ÷ (correct + wrong answers); coverage = correct ÷ (correct + wrong answers + misses)). The new precision is consistent across the three sets (89.6–89.7%), with no visible sign of overfitting to the dev set (with 200 stores, there is some margin of error).</p>
+
+            <div class="table-wrap">
+              <table>
+                <caption>879 stores with labeled ground truth used for tuning (scored by corporate number)</caption>
+                <thead><tr><th scope="col">Metric</th><th scope="col" class="n">Before</th><th scope="col" class="n">After</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Precision (share of returned values that were correct)</th><td class="n">69.8%</td><td class="n good">90.6%</td></tr>
+                  <tr><th scope="row">Coverage (share of the 463 stores whose ground truth has a company that were answered correctly)</th><td class="n">67.8%</td><td class="n good">86.0%</td></tr>
+                  <tr><th scope="row">Wrong answers + over-extraction (returned a different company / returned a company for a store with no operating company or none that could be confirmed)</th><td class="n">136</td><td class="n good">44</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-note">Precision = correct ÷ (correct + wrong answers + over-extractions); coverage = correct ÷ (correct + wrong answers + misses). Split into 5 PRs, reviewed, and merged into the production code.</p>
+          </section>
+
+          <section id="challenges" aria-labelledby="h-challenges">
+            <h2 id="h-challenges"><span class="idx">04</span>Challenges and how I tackled them</h2>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">01</span><h3>Company-owned or franchisee? Or a different company with the same name?</h3></div>
+              <p class="case-catch">Reading a company name off a page doesn't make it the operating company.</p>
+              <ul class="points">
+                <li>Changed scoring to match on corporate number instead of company name</li>
+                <li>Gave the LLM more evidence (companies registered at the address, the page field the name appeared in, the page's domain) and spelled out which companies it must not pick</li>
+                <li>In entity resolution, prioritized exact name matches and broke ties by the store's prefecture</li>
+                <li>Checked the chosen company against the National Tax Agency's published data: closed companies are not returned, and merged ones are mapped to their successor</li>
+              </ul>
+              <details>
+                <summary>Read more</summary>
+                <dl>
+                  <dt>Problem</dt>
+                  <dd>Chains mix company-owned stores run by headquarters with franchisees. Returning headquarters for a franchisee is wrong, and mapping a store of a company-owned brand to a franchisee is wrong too. Even when a company name is readable, it has to be resolved to one company among same-name entities, an "XX Holdings" holding company versus the company that runs the business, and companies that have closed or merged. On top of that, the evaluation scored by company name, so returning a different company with the same name still counted as correct.</dd>
+                  <dt>Approach</dt>
+                  <dd>I kept the layer that answers headquarters directly from the brand, after checking all 119 of its direct answers and confirming every one was correct, and judged from the pages only the stores it couldn't answer directly. I also told the LLM which field on the page a name came from (e.g. "operating company" vs. "hiring company"). In entity resolution, I handled the "Holdings" difference separately, and when there was only one same-name candidate I skipped the prefecture filter so nationwide chains headquartered in another prefecture wouldn't be dropped. I aligned the criteria for franchisees with the person creating the labeled ground truth. For the patterns pages alone can't settle, I showed they could be stopped by storing each brand's company-owned ratio in the brand master data, and handed that off.</dd>
+                </dl>
+              </details>
+            </div>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">02</span><h3>Isolating the causes of errors</h3></div>
+              <p class="case-catch">Let error counts decide what to fix.</p>
+              <ul class="points">
+                <li>Added to the run records: the stage that dropped a value, why the LLM rejected each candidate, the actual exception type, and the code version</li>
+                <li>Mechanically sorted errors into 4 causes and fixed the largest first</li>
+                <li>Two of my own output-format changes had raised parse failures from 8 → 364 and 2 → 29, so I reverted them and traced the cause to calls that didn't enforce the JSON schema at generation time</li>
+                <li>Accepted or rejected each change on both correct answers gained and new errors introduced (an option that gains 74 correct answers but introduces 230 errors is rejected)</li>
+              </ul>
+              <details>
+                <summary>Read more</summary>
+                <dl>
+                  <dt>Problem</dt>
+                  <dd>Judgment records were kept, but which stage dropped a value and the real exception type (wrapped in, and hidden by, the retry exception) existed only in the logs, so errors couldn't be counted by stage. Meanwhile, two of my own changes to the LLM's output format had increased response parse failures. I had initially adopted the second one after looking only at how wrong answers went up or down.</dd>
+                  <dt>Approach</dt>
+                  <dd>I mechanically sorted errors into "no evidence / never a candidate / dropped at judgment / resolved to a different entity" and let the counts decide where to fix. For my two changes, I reasoned that a single cause should explain both, read the call-side configuration, and pinned it down. From then on, I judged changes by parse failures and by movement in every direction, including correct → wrong, and locked the output order in with tests.</dd>
+                </dl>
+              </details>
+            </div>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">03</span><h3>Is an improvement real, or just variance?</h3></div>
+              <p class="case-catch">Measure the variance first, then count the effect.</p>
+              <ul class="points">
+                <li>Simply rerunning without code changes flipped the results for 28–40 stores</li>
+                <li>Pinned search results with a cache</li>
+                <li>For the LLM, measured 0 flipped judgments across 338 pages with identical content</li>
+                <li>Counted effects only on stores whose fetched pages were the same before and after</li>
+              </ul>
+              <details>
+                <summary>Read more</summary>
+                <dl>
+                  <dt>Problem</dt>
+                  <dd>A single change moves only a handful of stores, so deciding by overall precision ends up adopting changes that don't work.</dd>
+                  <dt>Approach</dt>
+                  <dd>GPU inference can vary even at temperature 0, so instead of assuming the LLM's judgments were stable, I measured it. Once it was clear the remaining variance came from page fetching, I counted each change's effect only on stores whose fetched pages were the same before and after.</dd>
+                </dl>
+              </details>
+            </div>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">04</span><h3>I had been overfitting to the stores used for tuning</h3></div>
+              <p class="case-catch">Keep only rules that also hold on stores not used for tuning.</p>
+              <ul class="points">
+                <li>A 14-row table I had added, with no source, accounted for about 2 pt of precision. In production it would change answers for about 4,400 stores with no basis, so I removed it, knowing the number would drop</li>
+                <li>Split 1,800 stores sampled from production into dev, validation, and test sets (test measured only once, at the end)</li>
+                <li>Rewrote rules as conditions that work for stores of the same type, not as exceptions for particular stores</li>
+                <li>For errors that return a completely unrelated company, added a final check that asks the LLM what role that company plays on the page the value came from</li>
+              </ul>
+              <details>
+                <summary>Read more</summary>
+                <dl>
+                  <dt>Problem</dt>
+                  <dd>Even with the 14-row table removed, re-measuring on 400 new stores gave 62% precision. Going through the 50 incorrect results one by one, 36 were errors that predated my changes and 14 were cases where rules I had added failed on other stores.</dd>
+                  <dt>Approach</dt>
+                  <dd>I split the 1,800 stores, balanced for difficulty, into dev (1,000 stores; inspected to design rules), validation (600 stores; counts only), and test (200 stores), and decided on each change by counting correct answers gained and new errors created on both dev and validation. The final check targets errors such as returning a mall's management company, another company's job ad, or a neighboring store's invoice number, and discards the value only when the company reads as a facility manager, a different store, or an ad. When in doubt it keeps the value, and I re-ran it to confirm it didn't discard a single correct answer. For errors caused by master-data values, I didn't override them in code; I asked the master data owner to fix them.</dd>
+                </dl>
+              </details>
+            </div>
+
+            <div class="callout">
+              <p><strong>I did not reach the 95% target.</strong> Checking the 69 wrong answers and misses one by one against the page text, I could confirm only 7 that implementation changes could fix (18 had no correct company name on the page, 29 had it as a candidate but didn't select it, and so on). I showed my manager this was a structural gap, drew a line there, and handed off with the conditions needed to reach the target and counts by cause.</p>
+            </div>
+          </section>
+
+          <section id="learned" aria-labelledby="h-learned">
+            <h2 id="h-learned"><span class="idx">05</span>What I learned</h2>
+            <p>With systems like LLMs that make mistakes probabilistically, I learned that the most important thing is to first decide what to measure, and how, to be able to say the system is correct in production. Getting 90% on the stores used for tuning was not production precision. Now, the more a number goes up, the more carefully I check why, and if there is no basis, I remove the change, even if it's my own.</p>
+            <p>This work ran on an evaluation that took hours every time I tried a single change. That pain led me to build infrastructure for running evaluations fast next (<a href="eval.html">Faster evaluation</a>).</p>
+          </section>
+
+          <nav class="doc-next" aria-label="More pages">
+            <a href="index.html"><small>← Back</small><b>Home</b></a>
+            <a class="is-next" href="eval.html"><small>Next →</small><b>Faster evaluation</b></a>
+          </nav>
+        </article>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

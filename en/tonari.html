@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tonari (JPHACKS 2026) | Hiroki Takahashi</title>
+  <meta name="description" content="tonari: an AI tutor that watches your work, speaks up only when you're stuck, and never gives away the answer. Built with a team of 4 at JPHACKS 2026; I handled the API server, stillness detection, answer-leak checks, and deployment.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="tonari (JPHACKS 2026) | Hiroki Takahashi">
+  <meta property="og:description" content="An AI tutor that speaks up only when you're stuck and never gives away the answer.">
+  <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/tonari.html">
+  <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/tonari.html">
+  <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="../assets/style.css?v=20261108g">
+  <script>document.documentElement.classList.add("js")</script>
+  <script src="../assets/main.js?v=20261108e" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html">Hiroki Takahashi <small>髙橋 浩樹</small></a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Accuracy</a></li>
+          <li><a href="eval.html">Faster evals</a></li>
+          <li><a href="workstyle.html">How I work</a></li>
+          <li><a href="shirube.html">shirube</a></li>
+          <li><a href="tonari.html" aria-current="page">tonari</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a class="lang-switch" href="../tonari.html" lang="ja" hreflang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <div class="doc-hero">
+        <p class="crumbs"><a href="index.html">Home</a> / Products / tonari</p>
+        <p class="eyebrow">Team project (4 members) · JPHACKS 2026 · 2026.10</p>
+        <h1>tonari<br>An AI tutor that speaks up only when you're stuck, and never gives away the answer</h1>
+        <p class="lead">A smartphone watches you write on paper, and only when your hand stops does it show the next step, not the answer, by voice and subtitles. We entered JPHACKS 2026 as a team of 4 and built and released it during the 2-day Hack Day (October 17–18).</p>
+        <div class="link-row">
+          <a class="btn btn-primary" href="https://youtube.com/shorts/04hRV0uHNMU">Watch the demo video <span aria-hidden="true">↗</span></a>
+          <a class="btn" href="https://github.com/jphacks/os_2601">GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="stat-row">
+          <div class="mini-stat"><b>16/24 → 0/24</b><span>Answer leaks in hints that went undetected (55-case evaluation set)</span></div>
+          <div class="mini-stat"><b>~3 s ahead</b><span>Anticipates when you're about to get stuck and starts generating a hint</span></div>
+        </div>
+      </div>
+
+      <div class="doc-layout">
+        <nav class="toc" aria-label="On this page" data-spy>
+          <p>Contents</p>
+          <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why">Motivation</a></li>
+            <li><a href="#mine">What I built</a></li>
+            <li><a href="#team">Letting the team build in parallel</a></li>
+          </ol>
+        </nav>
+
+        <article class="doc">
+          <section id="overview" aria-labelledby="h-overview">
+            <h2 id="h-overview"><span class="idx">01</span>Overview</h2>
+            <dl class="facts">
+              <dt>Event</dt>
+              <dd>JPHACKS 2026 (Osaka venue). Hack Day: October 17–18, 2026</dd>
+              <dt>Team</dt>
+              <dd>Team of 4. I handled the API server (state management, hint generation, answer-leak checks), detecting when the writing hand goes still, and deployment. Teammates handled the learner and operator screens, character switching, the presentation, and on-device testing</dd>
+              <dt>Tech</dt>
+              <dd>Next.js, React, TypeScript, Tailwind CSS / FastAPI, Pydantic / Gemini API (structured output) / VOICEVOX / Web Speech API / OpenAPI (API spec)</dd>
+              <dt>URL</dt>
+              <dd><a class="ext" href="https://github.com/jphacks/os_2601">github.com/jphacks/os_2601</a>&emsp;<a class="ext" href="https://youtube.com/shorts/04hRV0uHNMU">Demo video</a></dd>
+            </dl>
+            <figure class="figure">
+              <img src="../assets/img/tonari.webp" width="320" height="585" loading="lazy" style="max-width:260px" alt="tonari's screen. A linear equation problem appears at the top left, and the character gives a hint: 'To get x by itself on line 2, try dividing both sides by the same number.'">
+              <figcaption>When your hand stops, it shows the next step, not the answer, by voice and subtitles.</figcaption>
+            </figure>
+          </section>
+
+          <section id="why" aria-labelledby="h-why">
+            <h2 id="h-why"><span class="idx">02</span>Motivation</h2>
+            <p>When middle and high school students today get stuck on homework alone at home, they ask AI. But asking means taking a photo, opening an app, and typing a question, so their hands stop and their eyes leave the paper. And then the AI hands them the answer.</p>
+            <p>A human tutor sits beside you, watches your work, and the moment you stop, asks, “How far did you get?” They don't tell you the answer. tonari makes that possible with the smartphone you already have at home.</p>
+            <ul class="bullets">
+              <li><strong>Notice before being asked</strong>: detect from motion in the video that the hand has stopped.</li>
+              <li><strong>Never giving the answer</strong> is enforced mechanically on the server, not left to the prompt alone.</li>
+              <li><strong>Keep no video</strong>: the only things sent are motion values and a single frame when the student gets stuck.</li>
+            </ul>
+          </section>
+
+          <section id="mine" aria-labelledby="h-mine">
+            <h2 id="h-mine"><span class="idx">03</span>What I built</h2>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">01</span><h3>Detecting when the hand goes still</h3></div>
+              <dl>
+                <dt>Approach</dt>
+                <dd>In the browser, the video is downscaled to 64×36 and the frame difference each second is reduced to a number; the video itself is never sent or stored. On a real iPhone, I measured the values while writing and while stopped, filtered out brightness changes, and set separate thresholds for entering and leaving the still state (so the judgment doesn't flicker near the boundary).</dd>
+              </dl>
+            </div>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">02</span><h3>No waiting</h3></div>
+              <dl>
+                <dt>Approach</dt>
+                <dd>About 3 seconds before the student gets stuck, the app sends a photo and starts generating a hint, so the moment they do get stuck, speech synthesis starts without waiting on the AI.</dd>
+              </dl>
+            </div>
+
+            <div class="case">
+              <div class="case-head"><span class="idx">03</span><h3>Never giving the answer</h3></div>
+              <dl>
+                <dt>Approach</dt>
+                <dd>In the same call, the AI also solves the problem itself; if the hint contains the answer or an intermediate value, the server discards it and replaces it with a question back to the student.</dd>
+                <dt>Result</dt>
+                <dd>On a 55-case evaluation set, undetected answer leaks went from 16/24 → 0/24, with 0/31 false positives. However, these numbers come from the same set I used to fix the check, and it can't catch answers that have been paraphrased.</dd>
+              </dl>
+            </div>
+          </section>
+
+          <section id="team" aria-labelledby="h-team">
+            <h2 id="h-team"><span class="idx">04</span>Letting the team build in parallel</h2>
+            <p>I was the only one on the team with development experience. So that teammates could build screens with AI (Claude Code or Codex) without breaking the API or shared logic, I set up safeguards in advance.</p>
+            <ul class="bullets">
+              <li><strong>API spec and mocks first</strong>: I defined the spec in OpenAPI and provided mocks, so the screens could be built in parallel without waiting for the API to be finished.</li>
+              <li><strong>Block out-of-scope changes</strong>: I assigned each person the folders they could touch, and used git hooks (pre-commit, pre-push) and CI to block changes outside their area or to protected files, direct pushes to main, and force pushes.</li>
+              <li><strong>Rules and guides for the AI to read first</strong>: I wrote each person's responsibilities and what was off-limits into CLAUDE.md and AGENTS.md, and wrote a guide to developing with AI for teammates new to development. When someone needed a change outside their area, the rule was to ask for it rather than make it themselves.</li>
+            </ul>
+          </section>
+
+          <nav class="doc-next" aria-label="More pages">
+            <a href="shirube.html"><small>← Previous</small><b>shirube (personal project)</b></a>
+            <a class="is-next" href="about.html"><small>Next →</small><b>Background &amp; skills</b></a>
+          </nav>
+        </article>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
