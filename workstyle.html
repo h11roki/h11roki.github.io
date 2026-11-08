@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>仕事の進め方：データの誤りを直し、同じ誤りを二度と入れない | 髙橋 浩樹</title>
-  <meta name="description" content="長期インターンでの仕事の進め方。データの修正と再発防止を組で入れ、誤りを原因別に数え、変更は同じ店舗で前後を比べる。ルールと LLM、AI と自分の分担。">
+  <title>仕事の進め方 | 髙橋 浩樹</title>
+  <meta name="description" content="仕事の進め方。数字で採否を決めて判断を残す。データの修正と再発防止を組で入れ、誤りを原因別に数え、変更は同じ店舗で前後を比べる。ルールと LLM、AI と自分の分担。">
   <meta property="og:type" content="article">
   <meta property="og:title" content="仕事の進め方 | 髙橋 浩樹">
-  <meta property="og:description" content="データの誤りを直し、同じ誤りを二度と入れない。">
+  <meta property="og:description" content="数字で採否を決めて判断を残す。データの誤りは直すだけでなく、同じ誤りを二度と入れない。">
   <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108b">
+  <link rel="stylesheet" href="assets/style.css?v=20261108c">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108b" defer></script>
+  <script src="assets/main.js?v=20261108c" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -32,6 +32,7 @@
           <li><a href="workstyle.html" aria-current="page">仕事の進め方</a></li>
           <li><a href="shirube.html">shirube</a></li>
           <li><a href="tonari.html">となり</a></li>
+          <li><a href="about.html">経歴・スキル</a></li>
           <li><a href="index.html#contact">連絡先</a></li>
         </ul>
       </nav>
@@ -42,15 +43,16 @@
     <div class="wrap">
       <div class="doc-hero">
         <p class="crumbs"><a href="index.html">トップ</a> / 仕事 / 仕事の進め方</p>
-        <p class="eyebrow">Baseconnect 株式会社 ・ 長期インターン ・ 仕事の進め方</p>
-        <h1>データの誤りを直し、<br>同じ誤りを二度と入れない</h1>
-        <p class="lead">精度の改善だけでなく、本番の店舗データに入った誤りを直す仕事も担当しています。誤りを 1 件見つけたら、同じ原因の店舗を数えて直し、取り込みと生成の側でも同じ誤りが入らないようにします。</p>
+        <p class="eyebrow">Baseconnect 株式会社 ・ 長期インターン ・ 個人開発</p>
+        <h1>仕事の進め方</h1>
+        <p class="lead">数字で採否を決め、判断を残す。データの誤りは直すだけでなく、同じ誤りを二度と入れない。インターンと個人開発で続けている進め方です。</p>
       </div>
 
       <div class="doc-layout">
         <nav class="toc" aria-label="このページの目次" data-spy>
           <p>目次</p>
           <ol>
+            <li><a href="#principles">大切にしていること</a></li>
             <li><a href="#fixes">修正の例</a></li>
             <li><a href="#prevent">直して、入口でも止める</a></li>
             <li><a href="#causes">誤りを原因別に数える</a></li>
@@ -64,8 +66,36 @@
         </nav>
 
         <article class="doc">
+          <section id="principles" aria-labelledby="h-principles">
+            <h2 id="h-principles"><span class="idx">01</span>大切にしていること</h2>
+            <p>LLM の出力はもっともらしく見えるので、感覚ではなく数字で採否を決めています。仕事でも個人開発でも同じ進め方です。</p>
+            <div class="principles">
+              <div class="principle reveal">
+                <h3>測り方を、直す前に決める</h3>
+                <p>改善を始める前に、評価データと比べる道具を作ります。採る条件は、測る前に書いておきます。</p>
+                <p class="evidence"><b>shirube</b>　何も変えていない設定どうしでも「差あり」が名目の 2 倍出ると気づき、2 つの設定を交互に流して並べ替え検定で比べるように直した。</p>
+              </div>
+              <div class="principle reveal">
+                <h3>数字が上がったときほど、疑う</h3>
+                <p>改善に使ったデータで上がった数字は、本番の精度とは限りません。理由を説明できない改善は採りません。</p>
+                <p class="evidence"><b>インターン</b>　自分たちが入れた出典のない 14 行の対応表が精度の約 2pt を作っていた。本番では根拠なく約 4,400 店舗の答えを変えるので、数字が下がるのを承知で外した。</p>
+              </div>
+              <div class="principle reveal">
+                <h3>自分の変更でも、測って戻す</h3>
+                <p>増えた正解だけでなく、新しく生んだ誤りも数えて採否を決めます。PR には「正解 +16 ／ 誤り −2」のように両方を書きます。</p>
+                <p class="evidence"><b>インターン</b>　LLM の出力形式を変えた自分の変更 2 件が、応答の解析失敗を 8 → 364 件、2 → 29 件に増やしていた。撤回して、JSON の型を強制しない呼び出しだったという共通の原因を突き止めた。</p>
+              </div>
+              <div class="principle reveal">
+                <h3>判断を、文章で残す</h3>
+                <p>設計の選択肢と、採らなかった理由を、実装より先に ADR（設計判断の記録）に書きます。</p>
+                <p class="evidence"><b>shirube</b>　ADR は 99 本（2026 年 11 月 8 日時点）。採らなかった改善 3 件も、数字と理由を残している。</p>
+              </div>
+            </div>
+          </section>
+
           <section id="fixes" aria-labelledby="h-fixes">
-            <h2 id="h-fixes"><span class="idx">01</span>修正の例</h2>
+            <h2 id="h-fixes"><span class="idx">02</span>修正の例</h2>
+            <p>精度の改善だけでなく、本番の店舗データに入った誤りを直す仕事も担当しています。誤りを 1 件見つけたら、同じ原因の店舗を数えて直し、取り込みと生成の側でも同じ誤りが入らないようにします。</p>
             <div class="table-wrap">
               <table>
                 <thead><tr><th scope="col">誤り</th><th scope="col">直したこと</th></tr></thead>
@@ -95,7 +125,7 @@
           </section>
 
           <section id="prevent" aria-labelledby="h-prevent">
-            <h2 id="h-prevent"><span class="idx">02</span>直して、入口でも止める</h2>
+            <h2 id="h-prevent"><span class="idx">03</span>直して、入口でも止める</h2>
             <p><strong>既存データの修正と再発防止を、必ず組で入れる。</strong>誤りが見つかったら、同じ原因の店舗がどれだけあるかを数え、修正のバッチで既存のデータを直します。同時に、取り込み時のガードで同じ誤りを弾き、誤りを生んだ抽出や判定の処理も直します。</p>
             <ol class="flow" style="--n:5" aria-label="修正と再発防止の流れ">
               <li><b>範囲を数える</b>同じ原因の店舗を洗い出す</li>
@@ -108,7 +138,7 @@
           </section>
 
           <section id="causes" aria-labelledby="h-causes">
-            <h2 id="h-causes"><span class="idx">03</span>誤りを、原因別に数える</h2>
+            <h2 id="h-causes"><span class="idx">04</span>誤りを、原因別に数える</h2>
             <p><strong>直す場所は、件数で決める。</strong>判定の記録に、値を消した段とその材料、LLM が退けた候補の理由、例外の実際の型を残し、誤りを 4 つの原因に機械的に分けています。どこを直せば何件動くかが見えるので、件数の多い所から手を付けます。</p>
             <ul class="chips" aria-label="誤りの分け方">
               <li>材料が無い</li>
@@ -119,14 +149,14 @@
           </section>
 
           <section id="compare" aria-labelledby="h-compare">
-            <h2 id="h-compare"><span class="idx">04</span>変更は、同じ店舗で前後を比べる</h2>
+            <h2 id="h-compare"><span class="idx">05</span>変更は、同じ店舗で前後を比べる</h2>
             <p><strong>正しくなった件数と、新しく生んだ誤りの両方を数える。</strong>同じ店舗・同じ基準で変更の前後を比べ、PR には次のように両方を書きます。同じコードを流し直すだけで数十店舗の結果が入れ替わるので、取得したページが前後で同じ店舗だけで比べます。</p>
             <p class="diff-example" aria-label="PR に書く例：正解 プラス 16、誤り マイナス 2"><span class="plus">正解 +16</span><span>／</span><span class="minus">誤り −2</span></p>
             <p style="margin-top:1em">抽出漏れを減らそうと検索語を広げた自分の変更は、差し引きでマイナスだったので自分で戻しました。</p>
           </section>
 
           <section id="rules" aria-labelledby="h-rules">
-            <h2 id="h-rules"><span class="idx">05</span>ルールで決めるもの、LLM に任せるもの</h2>
+            <h2 id="h-rules"><span class="idx">06</span>ルールで決めるもの、LLM に任せるもの</h2>
             <p><strong>条件を書けるものはルール、文脈を読むものは LLM。</strong>電話番号や日付の表記、登記系サイトの除外、法人番号での名寄せのように、条件をはっきり書けるものはルールで処理します。ページの会社がどの立場で載っているか（運営会社か、求人の募集主か、施設の管理会社か）のように文脈を読む判断は LLM に任せ、判断の材料を渡します。LLM の出力は理由を先に書かせ、その順序はテストで固定しています。</p>
             <div class="compare">
               <div>
@@ -151,7 +181,7 @@
           </section>
 
           <section id="monitoring" aria-labelledby="h-monitoring">
-            <h2 id="h-monitoring"><span class="idx">06</span>原因を、監視の穴まで追う</h2>
+            <h2 id="h-monitoring"><span class="idx">07</span>原因を、監視の穴まで追う</h2>
             <p><strong>店舗が増えない理由を、データと仕組みの両方から。</strong>店舗のデータが増えていないように見えたとき、全行の作成日を調べて、ある時期から新しい店舗が 1 件も作られていないと特定しました。日次の監視が状態の変化しか数えておらず、収集が止まっても気づけない作りだったことも指摘しました。旧収集の検索語から検索した範囲を復元し、まだ検索していない業種と、回収できる店舗数の見込みを示しました。</p>
             <ol class="flow" style="--n:4" aria-label="調べた順">
               <li><b>作成日を数える</b>全行の作成日</li>
@@ -162,19 +192,27 @@
           </section>
 
           <section id="ai" aria-labelledby="h-ai">
-            <h2 id="h-ai"><span class="idx">07</span>AI との分担</h2>
+            <h2 id="h-ai"><span class="idx">08</span>AI との分担</h2>
             <p><strong>速さは AI に、どれを採るかは自分で決める。</strong>調査と実装の多くは Claude Code に任せています。誤答・過抽出・抽出漏れといった症状ごとに分析のセッションを分けて並列で動かし、全セッションが読む前提（定義、数字の出し方、報告の単位）は自分が書きます。AI の結論には根拠のデータ行を示させ、別のセッションに独立して確かめさせて、裏付けの無いものは差し戻します。AI が 66 件に影響するとした不具合が、確かめると 1 件だったこともあります。</p>
             <p>どの結論を採るかは自分が決め、判断の理由、採らなかった案、測った値は PR の本文に残します。</p>
-            <ol class="flow" style="--n:4" aria-label="AI との進め方">
-              <li><b>前提を書く</b>定義・数字の出し方・報告の単位</li>
-              <li><b>症状ごとに分析</b>誤答・過抽出・抽出漏れを並列で</li>
-              <li><b>独立して確かめる</b>根拠のデータ行で裏を取る</li>
-              <li><b>採否を決めて残す</b>PR の本文に理由と測った値</li>
-            </ol>
+            <div class="org-chart" role="img" aria-label="自分が定義と測り方を書き、統括セッションが施策をまとめ、誤答・過抽出・抽出漏れを分析する 3 つのセッションに分け、検証セッションが結論の裏を取って誤りなら差し戻す体制の図">
+              <div class="org-node is-me"><b>自分</b><span>定義・測り方を書き、結論の採否を決める</span></div>
+              <span class="org-arrow" aria-hidden="true">↓</span>
+              <div class="org-node"><b>統括</b><span>施策をまとめ、実行と採点を回す</span></div>
+              <span class="org-arrow" aria-hidden="true">↓</span>
+              <div class="org-row">
+                <div class="org-node"><b>誤答</b><span>の分析</span></div>
+                <div class="org-node"><b>過抽出</b><span>の分析</span></div>
+                <div class="org-node"><b>抽出漏れ</b><span>の分析</span></div>
+              </div>
+              <span class="org-arrow" aria-hidden="true">↓</span>
+              <div class="org-node"><b>検証</b><span>結論の裏を取り、誤りなら差し戻す</span></div>
+              <p class="org-loop">100 ラウンド超を回して、精度 69.8% → 90.6%</p>
+            </div>
           </section>
 
           <section id="tools" aria-labelledby="h-tools">
-            <h2 id="h-tools"><span class="idx">08</span>仕事の不便は、道具で減らす</h2>
+            <h2 id="h-tools"><span class="idx">09</span>仕事の不便は、道具で減らす</h2>
             <p><strong>自分とチームが繰り返す作業から。</strong>マージされた PR を毎週分類して Slack に投稿する仕組み（GitHub Actions）を作り、分類できなかった PR が見えるようにして、PR タイトルの決まりを 2 つのリポジトリの開発ガイドに入れました。評価を速く回す基盤（<a href="eval.html">評価の高速化</a>）も、施策を試すたびに数時間待つ不便から始まっています。</p>
             <ol class="flow" style="--n:3" aria-label="週次の PR まとめ">
               <li><b>マージされた PR を集める</b>GitHub Actions</li>
@@ -184,7 +222,7 @@
           </section>
 
           <section id="database" aria-labelledby="h-database">
-            <h2 id="h-database"><span class="idx">09</span>データベース・API の設計</h2>
+            <h2 id="h-database"><span class="idx">10</span>データベース・API の設計</h2>
             <p>パイプラインの出力を受け取る本番のデータベースと API（TypeScript・PostgreSQL）も担当しています。</p>
 
             <div class="case">

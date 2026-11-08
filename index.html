@@ -14,9 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108b">
+  <link rel="stylesheet" href="assets/style.css?v=20261108c">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108b" defer></script>
+  <script src="assets/main.js?v=20261108c" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -24,13 +24,15 @@
   <header class="site-header">
     <div class="wrap">
       <a class="brand" href="#top">髙橋 浩樹 <small>Hiroki Takahashi</small></a>
-      <nav class="site-nav" aria-label="ページ内の移動" data-spy>
+      <nav class="site-nav" aria-label="サイト内の移動">
         <ul>
-          <li><a href="#work">仕事</a></li>
-          <li><a href="#projects">作ったもの</a></li>
-          <li><a href="#approach">進め方</a></li>
-          <li><a href="#history">経歴</a></li>
-          <li><a href="#skills">スキル</a></li>
+          <li><a href="index.html" aria-current="page">トップ</a></li>
+          <li><a href="work.html">精度改善</a></li>
+          <li><a href="eval.html">評価の高速化</a></li>
+          <li><a href="workstyle.html">仕事の進め方</a></li>
+          <li><a href="shirube.html">shirube</a></li>
+          <li><a href="tonari.html">となり</a></li>
+          <li><a href="about.html">経歴・スキル</a></li>
           <li><a href="#contact">連絡先</a></li>
         </ul>
       </nav>
@@ -74,16 +76,16 @@
             </a>
           </li>
           <li>
-            <a href="shirube.html">
-              <span class="entry-kind">個人開発</span>
-              <span class="entry-title">shirube（道標）<span>職業からシラバスを RAG で引き、理由つきの時間割を組む</span></span>
+            <a href="workstyle.html">
+              <span class="entry-kind">仕事 / インターン</span>
+              <span class="entry-title">仕事の進め方<span>大切にしていること、データの誤りの直し方、AI との分担</span></span>
               <span class="entry-arrow" aria-hidden="true">→</span>
             </a>
           </li>
           <li>
-            <a href="tonari.html">
-              <span class="entry-kind">チーム開発</span>
-              <span class="entry-title">となり（JPHACKS 2026）<span>詰まったときだけ声をかける、答えを言わない AI 家庭教師</span></span>
+            <a href="about.html">
+              <span class="entry-kind">プロフィール</span>
+              <span class="entry-title">経歴とスキル<span>これまでの道のりと、使っている技術</span></span>
               <span class="entry-arrow" aria-hidden="true">→</span>
             </a>
           </li>
@@ -91,108 +93,42 @@
       </div>
     </section>
 
-    <!-- ============ 01 仕事 ============ -->
-    <section class="section" id="work" aria-labelledby="work-title">
-      <div class="wrap">
-        <div class="section-head reveal">
-          <p class="section-label"><b>01</b>仕事</p>
-          <h2 class="section-title" id="work-title">本番の LLM を、誤りを数えて直す</h2>
-          <p class="section-intro">Baseconnect 株式会社（営業向け企業データベース）で、AI エンジニアとして長期インターンをしています。店舗データを作る本番の LLM パイプラインと、それを受け取るデータベース・API の両方を書いています。</p>
-        </div>
-
-        <div class="metrics reveal" role="list">
-          <div class="metric" role="listitem">
-            <p class="metric-label">店舗の運営会社の特定精度</p>
-            <p class="metric-value"><span class="from">69.8%</span><span class="arrow" aria-label="から">→</span><strong>90.6%</strong></p>
-            <div class="meter" aria-hidden="true"><span style="--v:69.8"></span><span class="after" style="--v:90.6"></span></div>
-            <p class="metric-note">改善に使った正解データ付きの 879 店舗。社名ではなく法人番号の一致で採点</p>
-          </div>
-          <div class="metric" role="listitem">
-            <p class="metric-label">カバレッジ（改善に一度も使っていない店舗）</p>
-            <p class="metric-value"><span class="from">63.6%</span><span class="arrow" aria-label="から">→</span><strong>77.9%</strong></p>
-            <div class="meter" aria-hidden="true"><span style="--v:63.6"></span><span class="after" style="--v:77.9"></span></div>
-            <p class="metric-note">テスト用の 200 店舗で、本番に入っていた値と比較。精度は 89.1% → 89.6% とほぼ同じまま</p>
-          </div>
-          <div class="metric" role="listitem">
-            <p class="metric-label">違う会社を出した件数</p>
-            <p class="metric-value"><span class="from">136 件</span><span class="arrow" aria-label="から">→</span><strong>44</strong><small>件</small></p>
-            <div class="meter" aria-hidden="true"><span style="--v:100"></span><span class="after" style="--v:32.4"></span></div>
-            <p class="metric-note">879 店舗で。運営会社の無い店舗に会社を出した「過抽出」も誤りに数える。少ないほど良い</p>
-          </div>
-          <div class="metric" role="listitem">
-            <p class="metric-label">評価にかかる時間（900 店舗）</p>
-            <p class="metric-value"><span class="from">2〜3 時間</span><span class="arrow" aria-label="から">→</span><small>約</small><strong>8</strong><small>分</small></p>
-            <p class="metric-note">約 8 分は、100 店舗を 8 並列で 48 秒だった実測からの見込み（これまでは 20 並列）。外部呼び出しの記録と再生で、ネットワークに触れず、毎回同じ結果で採点</p>
-          </div>
-        </div>
-
-        <div class="work-grid">
-          <div class="work-about reveal">
-            <p>エンジニア約 10 名のデータ基盤チームで、数百万件規模の店舗データを社員エンジニアと 2 人で担当しています。</p>
-            <ul class="more-list">
-              <li><a class="more" href="work.html">いちばん苦労した開発経験</a></li>
-              <li><a class="more" href="eval.html">評価の高速化</a></li>
-              <li><a class="more" href="workstyle.html">仕事の進め方</a></li>
-            </ul>
-            <p class="note">社内のコードのため、ソースコードは公開していません。社内システム名・店舗名は伏せています。</p>
-          </div>
-
-          <ol class="task-list reveal">
-            <li>
-              <div>
-                <h3><a href="work.html">店舗の運営会社を特定する LLM パイプラインの精度改善</a><span class="tag-main">いちばん苦労した経験</span></h3>
-                <p>誤りを段階別に数える記録を足して直す場所を件数で決め、結果の揺れから施策の効果を切り離して測った。改善に使った店舗への合わせ込みに気づき、評価用の店舗を分け直した。5 本の PR に分けてレビューを受け、本番にマージ。</p>
-              </div>
-            </li>
-            <li>
-              <div>
-                <h3><a href="eval.html">LLM パイプラインの評価を、数時間から数分に</a></h3>
-                <p>検索・クロール・LLM の呼び出しを記録し、ネットワークを塞いで再生・採点する CLI と CI のジョブを設計・実装した。プロンプトを変えた呼び出しだけが取り直される。7 本の PR に分けてレビューを受けた。</p>
-              </div>
-            </li>
-            <li>
-              <div>
-                <h3><a href="workstyle.html">データの誤りを直し、同じ誤りを二度と入れない</a></h3>
-                <p>店舗の属性の抽出で、開業日の精度を 45.7% → 90.4%、決済手段を 47.0% → 90.8% に（社内の精度検証）。既存データの修正と、取り込み時のガードを必ず組で入れている。</p>
-              </div>
-            </li>
-            <li>
-              <div>
-                <h3><a href="workstyle.html#database">本番データベース・API の設計と移行</a></h3>
-                <p>TypeScript・PostgreSQL。下流を止めずに進める段階的なスキーマ移行、取り込み API の設計、一意制約で失敗していた店舗の手動登録の修正など。</p>
-              </div>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 02 作ったもの ============ -->
+    <!-- ============ 01 作ったもの ============ -->
     <section class="section" id="projects" aria-labelledby="projects-title">
       <div class="wrap">
         <div class="section-head reveal">
-          <p class="section-label"><b>02</b>作ったもの</p>
+          <p class="section-label"><b>01</b>作ったもの</p>
           <h2 class="section-title" id="projects-title">使ってもらえる形まで、作り切る</h2>
           <p class="section-intro">一人で本番公開まで作った Web アプリと、4 人チームでハッカソンの 2 日間に作り切った作品です。</p>
         </div>
 
         <div class="projects">
-          <article class="project reveal" aria-labelledby="p-shirube">
-            <a class="project-media is-shirube" href="shirube.html" tabindex="-1" aria-hidden="true">
-              <img src="assets/img/shirube-route.webp" width="1280" height="1290" alt="" loading="lazy">
-            </a>
-            <div class="project-body">
-              <p class="project-meta"><span>個人開発</span><span>2026.10–</span><span class="live">本番公開中</span></p>
-              <h3 id="p-shirube"><a href="shirube.html">shirube <small>道標</small></a></h3>
-              <p class="project-catch">なりたい職業から、取る授業とその理由、卒業までの時間割を組む Web アプリ</p>
-              <p class="project-desc">職業名を入れると、LLM が必要なスキルを読み取り、シラバスを埋め込み検索して候補を集め、LLM が候補を読み直して理由つきで授業を選び、学期ごとの時間割に並べます。改善を始める前に精度・揺れ・費用を測る評価の仕組みを作り、変更を採るかどうかはそれで決めました。</p>
-              <ul class="tags" aria-label="使った技術">
-                <li>Next.js</li><li>FastAPI</li><li>PostgreSQL + pgvector</li><li>OpenAI API</li><li>AWS EC2</li><li>Docker Compose</li><li>GitHub Actions</li>
-              </ul>
-              <div class="link-row">
-                <a class="more" href="shirube.html">企画と設計を詳しく</a>
-                <a class="ext" href="https://shirube.duckdns.org">デモ</a>
-                <a class="ext" href="https://github.com/h11roki/Shirube">GitHub</a>
+          <article class="feature reveal" aria-labelledby="p-shirube">
+            <div class="feature-media-wrap">
+              <a class="feature-media" href="shirube.html" tabindex="-1" aria-hidden="true">
+                <video class="js-autoplay" muted loop playsinline preload="none" poster="assets/img/shirube-loop-poster.webp" width="1280" height="720">
+                  <source src="assets/video/shirube-loop.mp4" type="video/mp4">
+                </video>
+              </a>
+              <button class="feature-toggle" type="button">再生</button>
+            </div>
+            <div class="feature-body">
+              <div>
+                <p class="project-meta"><span>個人開発</span><span>2026.10–</span><span class="live">本番公開中</span></p>
+                <h3 id="p-shirube"><a href="shirube.html">shirube <small>道標</small></a></h3>
+                <p class="project-catch">なりたい職業から、取る授業とその理由、卒業までの時間割を組む Web アプリ</p>
+              </div>
+              <div>
+                <p class="project-desc">職業名を入れると、LLM が必要なスキルを読み取り、シラバスを埋め込み検索して候補を集め、LLM が候補を読み直して理由つきで授業を選び、学期ごとの時間割に並べます。改善を始める前に精度・揺れ・費用を測る評価の仕組みを作り、変更を採るかどうかはそれで決めました。</p>
+                <ul class="tags" aria-label="使った技術">
+                  <li>Next.js</li><li>FastAPI</li><li>PostgreSQL + pgvector</li><li>OpenAI API</li><li>AWS EC2</li><li>Docker Compose</li><li>GitHub Actions</li>
+                </ul>
+                <div class="link-row">
+                  <a class="more" href="shirube.html">企画と設計を詳しく</a>
+                  <a href="shirube.html">紹介動画（音声あり）</a>
+                  <a class="ext" href="https://shirube.duckdns.org">デモ</a>
+                  <a class="ext" href="https://github.com/h11roki/Shirube">GitHub</a>
+                </div>
               </div>
             </div>
           </article>
@@ -220,165 +156,10 @@
       </div>
     </section>
 
-    <!-- ============ 03 進め方 ============ -->
-    <section class="section" id="approach" aria-labelledby="approach-title">
-      <div class="wrap">
-        <div class="section-head reveal">
-          <p class="section-label"><b>03</b>進め方</p>
-          <h2 class="section-title" id="approach-title">測り方を先に決めて、判断は残す</h2>
-          <p class="section-intro">LLM の出力はもっともらしく見えるので、感覚ではなく数字で採否を決めています。仕事でも個人開発でも同じ進め方です。</p>
-        </div>
-
-        <div class="principles">
-          <div class="principle reveal">
-            <h3>測り方を、直す前に決める</h3>
-            <p>改善を始める前に、評価データと比べる道具を作ります。採る条件は、測る前に書いておきます。</p>
-            <p class="evidence"><b>shirube</b>　何も変えていない設定どうしでも「差あり」が名目の 2 倍出ると気づき、2 つの設定を交互に流して並べ替え検定で比べるように直した。</p>
-          </div>
-          <div class="principle reveal">
-            <h3>数字が上がったときほど、疑う</h3>
-            <p>改善に使ったデータで上がった数字は、本番の精度とは限りません。理由を説明できない改善は採りません。</p>
-            <p class="evidence"><b>インターン</b>　自分たちが入れた出典のない 14 行の対応表が精度の約 2pt を作っていた。本番では根拠なく約 4,400 店舗の答えを変えるので、数字が下がるのを承知で外した。</p>
-          </div>
-          <div class="principle reveal">
-            <h3>自分の変更でも、測って戻す</h3>
-            <p>増えた正解だけでなく、新しく生んだ誤りも数えて採否を決めます。PR には「正解 +16 ／ 誤り −2」のように両方を書きます。</p>
-            <p class="evidence"><b>インターン</b>　LLM の出力形式を変えた自分の変更 2 件が、応答の解析失敗を 8 → 364 件、2 → 29 件に増やしていた。撤回して、JSON の型を強制しない呼び出しだったという共通の原因を突き止めた。</p>
-          </div>
-          <div class="principle reveal">
-            <h3>判断を、文章で残す</h3>
-            <p>設計の選択肢と、採らなかった理由を、実装より先に ADR（設計判断の記録）に書きます。</p>
-            <p class="evidence"><b>shirube</b>　ADR は 99 本（2026 年 11 月 8 日時点）。採らなかった改善 3 件も、数字と理由を残している。</p>
-          </div>
-        </div>
-
-        <div class="org reveal">
-          <div>
-            <h3>速さは AI に、正しさの責任は自分に</h3>
-            <p>インターンでは、Claude Code の複数のセッションを、統括・症状別の分析・結論の検証に役割を分けて並列で動かし、100 ラウンドを超える改善を回しました。自分は、全セッションが従う定義・測り方・報告の単位を書き、どの結論を採るかを決める役に徹しました。</p>
-            <p>AI の結論には根拠のデータ行を示させ、裏付けのないものは差し戻します。AI が 66 件に影響するとした不具合が、確かめると実際は 1 件だったこともあります。</p>
-            <a class="more" href="workstyle.html" style="margin-top:16px">仕事の進め方を詳しく</a>
-          </div>
-          <div class="org-chart" role="img" aria-label="自分が定義と測り方を書き、統括セッションが施策をまとめ、誤答・過抽出・抽出漏れを分析する 3 つのセッションに分け、検証セッションが結論の裏を取って誤りなら差し戻す体制の図">
-            <div class="org-node is-me"><b>自分</b><span>定義・測り方を書き、結論の採否を決める</span></div>
-            <span class="org-arrow" aria-hidden="true">↓</span>
-            <div class="org-node"><b>統括</b><span>施策をまとめ、実行と採点を回す</span></div>
-            <span class="org-arrow" aria-hidden="true">↓</span>
-            <div class="org-row">
-              <div class="org-node"><b>誤答</b><span>の分析</span></div>
-              <div class="org-node"><b>過抽出</b><span>の分析</span></div>
-              <div class="org-node"><b>抽出漏れ</b><span>の分析</span></div>
-            </div>
-            <span class="org-arrow" aria-hidden="true">↓</span>
-            <div class="org-node"><b>検証</b><span>結論の裏を取り、誤りなら差し戻す</span></div>
-            <p class="org-loop">100 ラウンド超を回して、精度 69.8% → 90.6%</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 04 経歴 ============ -->
-    <section class="section" id="history" aria-labelledby="history-title">
-      <div class="wrap">
-        <div class="section-head reveal">
-          <p class="section-label"><b>04</b>経歴</p>
-          <h2 class="section-title" id="history-title">これまでの道のり</h2>
-        </div>
-
-        <ol class="route reveal">
-          <li>
-            <span class="route-date">2024.04</span>
-            <div>
-              <h3>立命館大学 理工学部 電子情報工学科 入学</h3>
-            </div>
-          </li>
-          <li class="is-major">
-            <span class="route-date">2026.04</span>
-            <div>
-              <h3>Baseconnect 株式会社 AI エンジニア（長期インターン）</h3>
-              <p>店舗の属性を LLM で抽出するパイプラインの精度改善と、それを受け取るデータベース・API の開発から始めた。</p>
-            </div>
-          </li>
-          <li class="is-major">
-            <span class="route-date">2026.08</span>
-            <div>
-              <h3>運営会社を特定するパイプラインの改善を主担当</h3>
-              <p>精度 69.8% → 90.6%。本番のコードにマージ。</p>
-            </div>
-          </li>
-          <li>
-            <span class="route-date">2026.10</span>
-            <div>
-              <h3>JPHACKS 2026 に 4 人チームで出場</h3>
-              <p>答えを言わない AI 家庭教師「となり」。API サーバと中核の処理、デプロイを担当。</p>
-            </div>
-          </li>
-          <li class="is-major">
-            <span class="route-date">2026.10</span>
-            <div>
-              <h3>shirube を開発、本番公開</h3>
-              <p>10 月 14 日に作り始め、約 2 週間半で AWS に公開。評価の仕組みで改善を続けている。</p>
-            </div>
-          </li>
-          <li>
-            <span class="route-date">2026.10</span>
-            <div>
-              <h3>LLM の評価を記録と再生で回す基盤を設計・実装</h3>
-              <p>100 店舗を 48 秒で、毎回同じ結果で採点できるように。</p>
-            </div>
-          </li>
-          <li class="is-future">
-            <span class="route-date">2028.03</span>
-            <div>
-              <h3>卒業予定</h3>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-
-    <!-- ============ 05 スキル ============ -->
-    <section class="section" id="skills" aria-labelledby="skills-title">
-      <div class="wrap">
-        <div class="section-head reveal">
-          <p class="section-label"><b>05</b>スキル</p>
-          <h2 class="section-title" id="skills-title">使っている技術</h2>
-        </div>
-
-        <dl class="skills reveal">
-          <div class="skill">
-            <dt>言語・フレームワーク</dt>
-            <dd>Python（FastAPI・SQLAlchemy・Pydantic。実務で主に使用）／ TypeScript（Next.js・React・Prisma）／ SQL</dd>
-          </div>
-          <div class="skill">
-            <dt>データベース・基盤</dt>
-            <dd>PostgreSQL（スキーマ設計・無停止の移行・pgvector）／ AWS（EC2・SQS・S3）／ Docker ／ GitHub Actions ／ Dagster ／ DuckDB・Parquet</dd>
-          </div>
-          <div class="skill">
-            <dt>LLM</dt>
-            <dd>OpenAI API・Gemini API・社内 GPU でホストしたオープンモデル ／ 構造化出力・埋め込み検索（RAG）／ 評価データの設計、LLM-as-a-Judge、プロンプトの A/B と統計的な比較</dd>
-          </div>
-          <div class="skill">
-            <dt>テスト・品質</dt>
-            <dd>pytest ／ Vitest ／ Playwright・axe（アクセシビリティの自動検査）／ 型の厳しい検査（mypy）</dd>
-          </div>
-          <div class="skill">
-            <dt>開発の進め方</dt>
-            <dd>評価駆動の改善 ／ ADR で設計判断を残す ／ 小さく分けた PR ／ Claude Code の並列での分析・実装</dd>
-          </div>
-          <div class="skill">
-            <dt>自然言語処理</dt>
-            <dd>形態素解析（UniDic）による社名の切り出し ／ 名寄せ ／ 判定の決定性の検証</dd>
-          </div>
-        </dl>
-      </div>
-    </section>
-
-    <!-- ============ 06 連絡先 ============ -->
+    <!-- ============ 02 連絡先 ============ -->
     <section class="section" id="contact" aria-labelledby="contact-title">
       <div class="wrap">
-        <h2 class="section-label" id="contact-title"><b>06</b>連絡先</h2>
+        <h2 class="section-label" id="contact-title"><b>02</b>連絡先</h2>
         <dl class="contact-list">
           <div>
             <dt>メール</dt>

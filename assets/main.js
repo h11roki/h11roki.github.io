@@ -6,7 +6,7 @@
     window.addEventListener("scroll", onScroll, { passive: true });
   }
 
-  const revealTargets = document.querySelectorAll(".reveal, .meter");
+  const revealTargets = document.querySelectorAll(".reveal");
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver(
       (entries) => {
@@ -64,5 +64,40 @@
       }
       if (status) setTimeout(() => { status.textContent = ""; }, 2400);
     });
+  });
+
+  // 見えているあいだだけ、無音のループ動画を流す。動きを減らす設定なら止めておき、ボタンで流せる
+  document.querySelectorAll("video.js-autoplay").forEach((video) => {
+    const button = video.closest(".feature-media-wrap")?.querySelector(".feature-toggle");
+    let userPaused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const syncButton = () => {
+      if (!button) return;
+      button.textContent = video.paused ? "再生" : "一時停止";
+      button.setAttribute("aria-label", video.paused ? "動画を再生" : "動画を一時停止");
+    };
+    const play = () => {
+      video.preload = "auto";
+      const p = video.play();
+      if (p) p.catch(() => {});
+    };
+    video.addEventListener("play", syncButton);
+    video.addEventListener("pause", syncButton);
+    button?.addEventListener("click", () => {
+      userPaused = !video.paused;
+      if (userPaused) video.pause();
+      else play();
+    });
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting && !userPaused) play();
+            else if (!entry.isIntersecting) video.pause();
+          }
+        },
+        { threshold: 0.25 }
+      ).observe(video);
+    }
+    syncButton();
   });
 })();
