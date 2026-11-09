@@ -986,6 +986,29 @@ td.good { color: var(--accent-ink); font-weight: 500; }
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 20px; }
 .stat-row .mini-stat { background: var(--bg-elev); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius-sm); padding: 12px 14px; }
 
+/* ページ冒頭の 3 行要約（課題・やったこと・結果） */
+.tldr {
+  margin-top: 24px;
+  max-width: 48em;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+.tldr > div {
+  display: grid;
+  grid-template-columns: 8.5em minmax(0, 1fr);
+  gap: 4px 16px;
+  padding: 12px 16px;
+}
+.tldr > div + div { border-top: 1px solid var(--line); }
+.tldr dt { font-size: 13px; font-weight: 700; color: var(--accent-ink); line-height: 1.8; }
+.tldr dd { margin: 0; font-size: 15px; line-height: 1.8; color: var(--ink); }
+.tldr-note { margin-top: 12px; max-width: 48em; font-size: 13px; line-height: 1.8; color: var(--ink-3); }
+@media (max-width: 560px) {
+  .tldr > div { grid-template-columns: minmax(0, 1fr); }
+}
+
 .doc-next {
   margin-top: clamp(56px, 8vw, 80px);
   display: grid;

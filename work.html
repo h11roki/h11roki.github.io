@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>いちばん苦労した開発経験：運営会社を特定する LLM の精度改善 | 髙橋 浩樹</title>
-  <meta name="description" content="Baseconnect の長期インターンで、店舗の運営会社を特定する本番の LLM パイプラインの精度を 69.8% から 90.6% に上げ、評価への合わせ込みに気づいて評価を作り直した経験。">
+  <meta name="description" content="京都のベンチャー企業での長期インターンで、店舗の運営会社を特定する本番の LLM パイプラインの精度を 69.8% から 90.6% に上げ、評価データへの過学習に気づいて評価を作り直した経験。">
   <meta property="og:type" content="article">
   <meta property="og:title" content="いちばん苦労した開発経験 | 髙橋 浩樹">
-  <meta property="og:description" content="誤りを段階別に数え、揺れから施策の効果を切り離し、合わせ込みに気づいて評価を作り直した。">
+  <meta property="og:description" content="誤りを段階別に数え、非決定性から施策の効果を切り離し、評価データへの過学習に気づいて評価を作り直した。">
   <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/work.html">
   <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/work.html">
   <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108h" defer></script>
+  <script src="assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -46,14 +46,15 @@
     <div class="wrap">
       <div class="doc-hero">
         <p class="crumbs"><a href="index.html">トップ</a> / 仕事 / 精度改善</p>
-        <p class="eyebrow">Baseconnect 株式会社 ・ 長期インターン ・ 技術的にいちばん苦労した開発経験</p>
+        <p class="eyebrow">京都のベンチャー企業 ・ 長期インターン ・ 技術的にいちばん苦労した開発経験</p>
         <h1>店舗の運営会社を特定する LLM パイプラインの精度改善と、評価の作り直し</h1>
         <p class="lead">営業向け企業データベースでは、営業の連絡先は店舗ではなく、その店舗を運営する会社にあります。運営会社を Web 調査と LLM で特定する本番のパイプラインを改善しました。違う会社を出すと、営業は意思決定者のいない会社に連絡してしまうので、誤りを増やさないことを最優先にしました。</p>
-        <div class="stat-row">
-          <div class="mini-stat"><b>69.8% → 90.6%</b><span>精度（改善に使った 879 店舗）</span></div>
-          <div class="mini-stat"><b>63.6% → 77.9%</b><span>カバレッジ（一度も使っていない 200 店舗。本番に入っていた値と比較）</span></div>
-          <div class="mini-stat"><b>136 → 44 件</b><span>違う会社を出した件数（879 店舗）</span></div>
-        </div>
+        <dl class="tldr" aria-label="3 行の要約">
+          <div><dt>課題</dt><dd>本番のパイプラインが違う会社を出す誤りが多かった。改善に使った 879 店舗で精度 69.8%（違う会社を出したのが 136 件）。</dd></div>
+          <div><dt>やったこと</dt><dd>誤りを原因別に数えて直し、879 店舗で精度 90.6%（136 → 44 件）。途中で 879 店舗への過学習に気づき、評価を開発・検証・テストに分けて作り直した。</dd></div>
+          <div><dt>未見データでの結果</dt><dd>改善に一度も使っていない 200 店舗で、本番に入っていた値と比べ、精度は同じ水準（89.1% → 89.6%）のまま、カバレッジを 63.6% → 77.9% に上げた。</dd></div>
+        </dl>
+        <p class="tldr-note">精度は 2 通りに数えています。879 店舗では、正解が空欄の 416 店舗（運営会社が無い、または確認できない店舗）に会社を出す「過抽出」も誤りに数えます。200 店舗では正解に会社がある店舗だけで数えるので、過抽出は入りません。数え方も店舗も違うため、本番の値（89% 前後）と改善前（69.8%）は直接は比べられません。</p>
       </div>
 
       <div class="doc-layout">
@@ -99,10 +100,10 @@
 
           <section id="result" aria-labelledby="h-result">
             <h2 id="h-result"><span class="idx">03</span>結果</h2>
-            <p>改善に一度も使っていないテスト用の 200 店舗で、本番に入っている値と比べました（区分の分け方は下の 04）。精度はほぼそのままに、カバレッジを 14 ポイント上げています。</p>
+            <p>改善に一度も使っていないテスト用の 200 店舗で、本番に入っている値と比べました（区分の分け方は下の 04）。精度はほぼそのままに、カバレッジを 14 ポイント上げています。この表の精度は、正解に会社がある店舗だけで数えています（過抽出を含まない）。</p>
             <div class="table-wrap">
               <table class="wide">
-                <caption>本番から抜き出した店舗を 3 つに分けて、本番に入っていた値と比較</caption>
+                <caption>本番から抜き出した店舗を 3 つに分けて、本番に入っていた値と比較（精度は過抽出を含まない）</caption>
                 <thead>
                   <tr><th scope="col">区分</th><th scope="col" class="n">精度（今回）</th><th scope="col" class="n">カバレッジ（今回）</th><th scope="col" class="n">精度（本番の値）</th><th scope="col" class="n">カバレッジ（本番の値）</th></tr>
                 </thead>
@@ -113,20 +114,20 @@
                 </tbody>
               </table>
             </div>
-            <p class="table-note">正解データに会社がある店舗で数えた（精度 = 正解 ÷（正解＋誤答）、カバレッジ = 正解 ÷（正解＋誤答＋抽出漏れ））。今回の精度は 3 区分でそろっていて（89.6〜89.7%）、開発用に合わせ込んだ跡は見えない（200 店舗なので誤差の幅はある）。</p>
+            <p class="table-note">正解データに会社がある店舗で数えた（精度 = 正解 ÷（正解＋誤答）、カバレッジ = 正解 ÷（正解＋誤答＋抽出漏れ））。今回の精度は 3 区分でそろっていて（89.6〜89.7%）、開発用に過学習した跡は見えない（200 店舗なので誤差の幅はある）。</p>
 
             <div class="table-wrap">
               <table>
-                <caption>改善に使った正解データ付きの 879 店舗（法人番号で採点）</caption>
+                <caption>改善に使った正解データ付きの 879 店舗（法人番号で採点。精度は過抽出も誤りに数える）</caption>
                 <thead><tr><th scope="col">指標</th><th scope="col" class="n">改善前</th><th scope="col" class="n">改善後</th></tr></thead>
                 <tbody>
-                  <tr><th scope="row">精度（値を出したうち正しい割合）</th><td class="n">69.8%</td><td class="n good">90.6%</td></tr>
+                  <tr><th scope="row">精度（値を出したうち正しい割合。過抽出も誤りに数える）</th><td class="n">69.8%</td><td class="n good">90.6%</td></tr>
                   <tr><th scope="row">カバレッジ（正解データに会社がある 463 店舗のうち、正しく出せた割合）</th><td class="n">67.8%</td><td class="n good">86.0%</td></tr>
                   <tr><th scope="row">誤答＋過抽出（違う会社を出した／運営会社が無い・確認できない店舗に会社を出した）</th><td class="n">136 件</td><td class="n good">44 件</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="table-note">精度 = 正解 ÷（正解＋誤答＋過抽出）、カバレッジ = 正解 ÷（正解＋誤答＋抽出漏れ）。5 本の PR に分けてレビューを受け、本番のコードにマージした。</p>
+            <p class="table-note">精度 = 正解 ÷（正解＋誤答＋過抽出）、カバレッジ = 正解 ÷（正解＋誤答＋抽出漏れ）。879 店舗のうち 416 店舗は正解が空欄で、ここに会社を出すと過抽出になる。改善前との差には、期間中の参照マスタの更新分も含む。5 本の PR に分けてレビューを受け、本番のコードにマージした。</p>
           </section>
 
           <section id="challenges" aria-labelledby="h-challenges">
@@ -138,7 +139,7 @@
               <ul class="points">
                 <li>採点を、社名ではなく法人番号の一致に変えた</li>
                 <li>LLM に判断材料（住所に登記された会社、社名が載っていた欄、ページのドメイン）を渡し、「読んではいけない会社」を明文化した</li>
-                <li>名寄せは完全一致の社名を優先し、同点なら店舗の都道府県で絞った</li>
+                <li>名寄せ（社名を法人に結び付けるエンティティ解決）は完全一致の社名を優先し、同点なら店舗の都道府県で絞った</li>
                 <li>採った法人を国税庁の公表データで照合し、閉鎖は出さず、合併は承継先に寄せた</li>
               </ul>
               <details>
@@ -173,10 +174,10 @@
             </div>
 
             <div class="case">
-              <div class="case-head"><span class="idx">03</span><h3>改善が本物か、揺れか分からない</h3></div>
-              <p class="case-catch">揺れを測ってから、効果を数える。</p>
+              <div class="case-head"><span class="idx">03</span><h3>改善が本物か、非決定性（実行ごとの揺れ）か分からない</h3></div>
+              <p class="case-catch">非決定性を測ってから、効果を数える。</p>
               <ul class="points">
-                <li>コードを変えずに流し直すだけで、28〜40 店舗の結果が入れ替わった</li>
+                <li>コードを変えずに再実行するだけで、28〜40 店舗の結果が入れ替わった</li>
                 <li>検索結果をキャッシュで固定した</li>
                 <li>LLM は本文が同じ 338 ページで判定の反転 0 件を実測した</li>
                 <li>効果は、取得したページが前後で同じ店舗だけで数えた</li>
@@ -187,17 +188,17 @@
                   <dt>課題</dt>
                   <dd>1 つの施策で動くのは数件なので、全体の精度で採否を決めると、効かない施策を採ってしまう。</dd>
                   <dt>工夫</dt>
-                  <dd>temperature 0 でも GPU の推論は揺れうるので、LLM の判定が変わらないことは前提にせず実測した。残る揺れはページの取得だと分かったので、施策の効果は、取得したページが前後で同じ店舗だけで数えた。</dd>
+                  <dd>temperature 0 でも GPU の推論は非決定的になりうるので、LLM の判定が変わらないことは前提にせず実測した。残る非決定性はページの取得だと分かったので、施策の効果は、取得したページが前後で同じ店舗だけで数えた。</dd>
                 </dl>
               </details>
             </div>
 
             <div class="case">
-              <div class="case-head"><span class="idx">04</span><h3>改善に使った店舗に、合わせ込んでいた</h3></div>
+              <div class="case-head"><span class="idx">04</span><h3>改善に使った店舗に、過学習していた</h3></div>
               <p class="case-catch">改善に使っていない店舗でも通る規則だけを残す。</p>
               <ul class="points">
-                <li>自分が入れた出典のない 14 行の表が精度の約 2pt を作っていた。本番では根拠なく約 4,400 店舗の答えを変えるので、数字が下がるのを承知で外した</li>
-                <li>本番から抜き出した 1,800 店舗を、開発用・検証用・テスト用（最後に 1 回だけ測る）に分けた</li>
+                <li>自分が承認して入れた出典のない 14 行の対応表が、精度の約 2pt を作っていた。本番では根拠なく約 4,400 店舗の答えを変えるので、数字が下がるのを承知で外した</li>
+                <li>本番から抜き出した 1,800 店舗を、開発用・検証用・テスト用（ホールドアウト。最後に 1 回だけ測る）に分けた</li>
                 <li>規則は「その店舗のための例外」ではなく「同じ型の店舗に効く条件」で書き直した</li>
                 <li>まったく違う会社を出す誤りには、値を採ったページでその会社の立場を LLM に聞く、最後の検査を入れた</li>
               </ul>
@@ -205,7 +206,7 @@
                 <summary>詳しく読む</summary>
                 <dl>
                   <dt>課題</dt>
-                  <dd>14 行の表を外しても、新しい 400 店舗で測り直すと精度は 62% だった。外れた 50 件を 1 件ずつ見ると、改修前からの誤りが 36 件、改善で足した規則が別の店舗で外れたものが 14 件だった。</dd>
+                  <dd>14 行の対応表は、自分が統括する AI の分析セッションが、評価に使った店舗の誤りを潰すために入れ、自分が採用を承認していた。表を外しても、新しい 400 店舗で測り直すと精度は 62% だった。外れた 50 件を 1 件ずつ見ると、改修前からの誤りが 36 件、改善で足した規則が別の店舗で外れたものが 14 件だった。</dd>
                   <dt>工夫</dt>
                   <dd>1,800 店舗は難しさの偏りをそろえて、開発用（1,000 店舗。中を見て規則を考える）・検証用（600 店舗。件数だけを見る）・テスト用（200 店舗）に分け、開発用と検証用の両方で、増える正解と新しく生む誤りを数えて採否を決めた。最後の検査は、モールの管理会社、別の会社の求人広告、隣の店のインボイス番号などを出す誤りが対象で、施設の管理会社・別の店・広告と読めるときだけ値を捨てる。迷うときは値を残す方に倒し、当て直して正しい答えを 1 件も捨てないことを確かめた。マスタの値が原因の誤りはコードで上書きせず、マスタの担当者に修正を依頼した。</dd>
                 </dl>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How I work | Hiroki Takahashi</title>
-  <meta name="description" content="How I work: I decide what to adopt by the numbers and write down the reasoning. I ship every data fix together with a guard against recurrence, count errors by cause, and compare each change before and after on the same stores. How I split work between rules and LLMs, and between AI and myself.">
+  <meta name="description" content="How I work: I decide what to adopt by the numbers and write down the reasoning. I ship every data fix together with a guard against recurrence, and compare each change before and after on the same stores. How I split work between rules and LLMs, and between AI and myself.">
   <meta property="og:type" content="article">
   <meta property="og:title" content="How I work | Hiroki Takahashi">
   <meta property="og:description" content="I decide what to adopt by the numbers and write down the reasoning. When data is wrong, I don't just fix it; I make sure the same error never gets in again.">
@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="../assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="../assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="../assets/main.js?v=20261108h" defer></script>
+  <script src="../assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -46,7 +46,7 @@
     <div class="wrap">
       <div class="doc-hero">
         <p class="crumbs"><a href="index.html">Home</a> / Work / How I work</p>
-        <p class="eyebrow">Baseconnect Inc. · Long-term internship · Personal projects</p>
+        <p class="eyebrow">A Kyoto-based startup · Long-term internship · Personal projects</p>
         <h1>How I work</h1>
         <p class="lead">I decide what to adopt by the numbers, and I write down why. When data is wrong, I don't stop at fixing it; I make sure the same error can't get in again. This is how I've been working, both in my internship and on my personal projects.</p>
       </div>
@@ -58,7 +58,6 @@
             <li><a href="#principles">What I value</a></li>
             <li><a href="#fixes">Examples of fixes</a></li>
             <li><a href="#prevent">Fix it, then block it at the entry point</a></li>
-            <li><a href="#causes">Count errors by cause</a></li>
             <li><a href="#compare">Compare before and after</a></li>
             <li><a href="#rules">Rules vs. LLMs</a></li>
             <li><a href="#monitoring">Trace it to the monitoring gap</a></li>
@@ -81,17 +80,17 @@
               <div class="principle reveal">
                 <h3>Be most skeptical when the numbers go up</h3>
                 <p>A gain on the data used for tuning isn't necessarily a gain in production accuracy. I don't adopt an improvement I can't explain.</p>
-                <p class="evidence"><b>Internship</b>&emsp;A 14-row lookup table with no source, which we had added ourselves, accounted for about 2 pt of precision. In production it would change the answers for about 4,400 stores with no basis, so I removed it, knowing the number would drop.</p>
+                <p class="evidence"><b>Internship</b>&emsp;A 14-row lookup table with no source, which I had approved, accounted for about 2 pt of precision, so I removed it, knowing the number would drop (<a href="work.html#challenges">Accuracy, case 04</a>).</p>
               </div>
               <div class="principle reveal">
                 <h3>Measure and roll back, even my own changes</h3>
-                <p>I decide based not only on the new correct answers a change produces but also on the new errors it introduces. In PRs I report both, like "Correct +16 / Wrong −2".</p>
-                <p class="evidence"><b>Internship</b>&emsp;Two of my own changes to the LLM output format had increased response parse failures from 8 → 364 and from 2 → 29. I reverted them and traced both to a common cause: the calls did not enforce the JSON schema.</p>
+                <p>I decide based not only on the new correct answers a change produces but also on the new errors it introduces.</p>
+                <p class="evidence"><b>Internship</b>&emsp;When I broadened the search terms to reduce misses, the change introduced more new errors than new correct answers, so I reverted my own change.</p>
               </div>
               <div class="principle reveal">
                 <h3>Write decisions down</h3>
                 <p>Before implementing, I write the design options, and why I rejected the ones I didn't pick, in an ADR (architecture decision record).</p>
-                <p class="evidence"><b>shirube</b>&emsp;99 ADRs (as of November 8, 2026). The 3 improvements I rejected are recorded too, with their numbers and reasons.</p>
+                <p class="evidence"><b>shirube</b>&emsp;For example, favoring coverage while accepting more irrelevant courses (<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0080-selection-coverage.md">ADR 0080</a>). The 3 improvements I rejected are recorded too, with their numbers and reasons.</p>
               </div>
             </div>
           </section>
@@ -140,26 +139,15 @@
             <p style="margin-top:1.2em">So far I've fixed these the same way: phone number formats (forwarding numbers, extensions, +81), store names that were just a place name or had an address mixed in, coordinates, business hours with every day closed, opening dates with dropped digits, business types that shouldn't be treated as stores, and large numbers of stores linked to a single URL.</p>
           </section>
 
-          <section id="causes" aria-labelledby="h-causes">
-            <h2 id="h-causes"><span class="idx">04</span>Count errors by cause</h2>
-            <p><strong>Let the counts decide where to fix.</strong> The judgment records keep the stage that dropped a value and the evidence it used, the reasons the LLM rejected each candidate, and the actual type of any exception, so errors are sorted mechanically into four causes. Since I can see how many cases each fix would move, I start where the count is highest.</p>
-            <ul class="chips" aria-label="How errors are categorized">
-              <li>No evidence</li>
-              <li>Never a candidate</li>
-              <li>Dropped at judgment</li>
-              <li>Resolved to a different entity</li>
-            </ul>
-          </section>
-
           <section id="compare" aria-labelledby="h-compare">
-            <h2 id="h-compare"><span class="idx">05</span>Compare each change before and after on the same stores</h2>
-            <p><strong>Count both what became correct and what newly went wrong.</strong> I compare before and after a change on the same stores with the same criteria, and report both in the PR, like this. Simply rerunning the same code flips the results for dozens of stores, so I compare only stores whose fetched pages were the same before and after.</p>
+            <h2 id="h-compare"><span class="idx">04</span>Compare each change before and after on the same stores</h2>
+            <p><strong>Count both what became correct and what newly went wrong.</strong> I compare before and after a change on the same stores with the same criteria, and report both in the PR, like this.</p>
             <p class="diff-example" aria-label="Example in a PR: correct plus 16, wrong minus 2"><span class="plus">Correct +16</span><span>/</span><span class="minus">Wrong −2</span></p>
-            <p style="margin-top:1em">When I broadened the search terms to reduce misses, the net result was negative, so I reverted my own change.</p>
+            <p style="margin-top:1em">How I sort errors by cause and separate real effects from nondeterminism (run-to-run variance) is described on the <a href="work.html#challenges">accuracy page</a>.</p>
           </section>
 
           <section id="rules" aria-labelledby="h-rules">
-            <h2 id="h-rules"><span class="idx">06</span>What rules decide, and what I leave to the LLM</h2>
+            <h2 id="h-rules"><span class="idx">05</span>What rules decide, and what I leave to the LLM</h2>
             <p><strong>If the condition can be written down, it's a rule; if it takes reading context, it's the LLM.</strong> Anything whose conditions can be stated clearly, such as phone number and date formats, excluding corporate-registry sites, and merging companies by corporate number, is handled with rules. Judgments that require reading context, such as in what capacity a company appears on a page (operating company, job-ad recruiter, or facility management company), go to the LLM, and I pass it the evidence it needs. The LLM writes its reasoning before its answer, and that order is pinned by tests.</p>
             <div class="compare">
               <div>
@@ -184,7 +172,7 @@
           </section>
 
           <section id="monitoring" aria-labelledby="h-monitoring">
-            <h2 id="h-monitoring"><span class="idx">07</span>Trace the cause all the way to the monitoring gap</h2>
+            <h2 id="h-monitoring"><span class="idx">06</span>Trace the cause all the way to the monitoring gap</h2>
             <p><strong>Why weren't stores growing? I looked at both the data and the system.</strong> When the store data seemed to have stopped growing, I checked the creation date of every row and pinned down that not a single new store had been created since a certain point. I also pointed out that daily monitoring counted only status changes, so it was built in a way that couldn't notice when collection stopped. I reconstructed the range that had been searched from the old collector's search terms, and laid out which business types hadn't been searched yet and an estimate of how many stores could be recovered.</p>
             <ol class="flow" style="--n:4" aria-label="Order of investigation">
               <li><b>Count creation dates</b>Across every row</li>
@@ -195,7 +183,7 @@
           </section>
 
           <section id="ai" aria-labelledby="h-ai">
-            <h2 id="h-ai"><span class="idx">08</span>Working with AI</h2>
+            <h2 id="h-ai"><span class="idx">07</span>Working with AI</h2>
             <p><strong>AI provides the speed; I decide what to adopt.</strong> I hand much of the investigation and implementation to Claude Code. I run separate analysis sessions in parallel, one per symptom (wrong answers, over-extraction, misses), and I write the premises every session reads: definitions, how numbers are computed, and the unit of reporting. I have the AI cite the data rows behind each conclusion, have a separate session verify it independently, and send back anything without support. Once, a bug the AI said affected 66 cases turned out, when checked, to affect 1.</p>
             <p>I decide which conclusions to adopt, and record the reasoning, the rejected alternatives and the measured values in the PR description.</p>
             <div class="org-chart" role="img" aria-label="Diagram of the setup: I write the definitions and how to measure; a lead session consolidates the changes and splits the work across three sessions analyzing wrong answers, over-extraction and misses; a verification session checks the conclusions and sends them back if they are wrong">
@@ -215,7 +203,7 @@
           </section>
 
           <section id="tools" aria-labelledby="h-tools">
-            <h2 id="h-tools"><span class="idx">09</span>Remove friction at work with tools</h2>
+            <h2 id="h-tools"><span class="idx">08</span>Remove friction at work with tools</h2>
             <p><strong>Starting with the tasks my team and I repeat.</strong> I built a GitHub Actions workflow that classifies merged PRs every week and posts them to Slack, made the PRs it couldn't classify visible, and added PR title conventions to the development guides of two repositories. The infrastructure for running evaluations faster (<a href="eval.html">Faster evaluation</a>) also started from the pain of waiting hours every time I tried a change.</p>
             <ol class="flow" style="--n:3" aria-label="Weekly PR summary">
               <li><b>Collect merged PRs</b>GitHub Actions</li>
@@ -225,7 +213,7 @@
           </section>
 
           <section id="database" aria-labelledby="h-database">
-            <h2 id="h-database"><span class="idx">10</span>Database and API design</h2>
+            <h2 id="h-database"><span class="idx">09</span>Database and API design</h2>
             <p>I also work on the production database and API (TypeScript, PostgreSQL) that receive the pipeline's output.</p>
 
             <div class="case">

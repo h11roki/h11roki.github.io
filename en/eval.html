@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Faster evaluation: Cutting an LLM pipeline's evaluation from hours to minutes | Hiroki Takahashi</title>
-  <meta name="description" content="By recording and replaying external calls, I made the evaluation of an LLM pipeline, which used to take hours for every change I tried, run without touching the network and with the same result every time (900 stores: 2–3 hours → about 8 min projected; 100 stores scored in 48 s).">
+  <title>Faster evaluation: Scoring an LLM pipeline on 100 stores in 48 s, with the same result every time | Hiroki Takahashi</title>
+  <meta name="description" content="By recording and replaying external calls, I made an LLM pipeline's evaluation run without touching the network and with the same result every time. 100 stores scored in 48 s (measured).">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Faster evaluation | Hiroki Takahashi">
-  <meta property="og:description" content="Cutting an LLM pipeline's evaluation from hours to minutes by recording and replaying external calls.">
+  <meta property="og:description" content="Recording and replaying external calls to score an LLM pipeline on 100 stores in 48 s, with the same result every time.">
   <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/eval.html">
   <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/eval.html">
   <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="../assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="../assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="../assets/main.js?v=20261108h" defer></script>
+  <script src="../assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -46,14 +46,13 @@
     <div class="wrap">
       <div class="doc-hero">
         <p class="crumbs"><a href="index.html">Home</a> / Work / Faster evaluation</p>
-        <p class="eyebrow">Baseconnect Inc. · Long-term internship · Design and implementation</p>
-        <h1>Cutting an LLM pipeline's evaluation from hours to minutes</h1>
-        <p class="lead">Evaluation used to mean waiting hours for every change I tried. By recording and replaying external calls, I made it run without touching the network and produce the same result every time.</p>
-        <div class="stat-row">
-          <div class="mini-stat"><b>2–3 hours → about 8 min</b><span>Evaluating 900 stores. It used to take 2–3 hours at 20-way parallelism, and results varied with the state of external services. The ~8 min is a projection from a measured run that scored 100 stores in 48 s</span></div>
-          <div class="mini-stat"><b>48 s</b><span>Measured: 100 stores scored at 8-way parallelism. Zero outbound connections, the same result every time</span></div>
-          <div class="mini-stat"><b>942 → 232 s</b><span>Re-recording after code changes (20 stores). Only the missing calls are re-recorded</span></div>
-        </div>
+        <p class="eyebrow">A Kyoto-based startup · Long-term internship · Design and implementation</p>
+        <h1>Evaluating an LLM pipeline: 100 stores in 48&nbsp;s, the same result every time</h1>
+        <dl class="tldr" aria-label="Summary in three lines">
+          <div><dt>Problem</dt><dd>Every change I tried meant waiting 2–3 hours to evaluate 900 stores at 20-way parallelism. External calls (search, crawling, LLM) made the results nondeterministic, so I couldn't tell whether a before/after difference came from the change.</dd></div>
+          <div><dt>What I did</dt><dd>Designed and implemented record/replay: external calls are recorded per service client, and during evaluation the network is blocked and responses come from the recordings. It also runs in CI on every PR.</dd></div>
+          <div><dt>Result (measured)</dt><dd>100 stores scored in 48 s at 8-way parallelism, with zero outbound connections and the same result on every run. After a code change, only the cache-missed calls are re-recorded (20 stores: 232 s, versus 942 s for the initial recording).</dd></div>
+        </dl>
       </div>
 
       <div class="doc-layout">
@@ -108,7 +107,7 @@
           <section id="key" aria-labelledby="h-key">
             <h2 id="h-key"><span class="idx">03</span>The lookup key is "the inputs that determine the result"</h2>
             <p><strong>Look up by service, method, and inputs, not by URL.</strong> An earlier prototype matched only on URL at the HTTP layer, so when a call sent a different address to the address-matching service, it returned the result for the previous address. I made each external service's client the unit of recording and keyed recordings on (service, method, inputs that determine the result), so this kind of mix-up can't happen.</p>
-            <p>For LLM recordings, the key also includes a hash of the prompt template (system, user, and output schema). I verified that changing one piece of wording drops only that call out of the recordings and gets it re-recorded.</p>
+            <p>For LLM recordings, the key also includes a hash of the prompt template (system, user, and output schema). I verified that changing one piece of wording turns only that call into a cache miss and gets it re-recorded.</p>
             <div class="table-wrap">
               <table>
                 <caption>Lookup keys</caption>
@@ -116,7 +115,7 @@
                 <tbody>
                   <tr><th scope="row">URL only (prototype)</th><td>Returned the result for a different address</td></tr>
                   <tr><th scope="row">Service, method, inputs that determine the result</th><td class="good">Returns the same result only for the same inputs</td></tr>
-                  <tr><th scope="row">+ prompt hash</th><td class="good">Re-records only the calls whose wording changed</td></tr>
+                  <tr><th scope="row">+ prompt hash</th><td class="good">Only the calls whose wording changed miss the cache and are re-recorded</td></tr>
                 </tbody>
               </table>
             </div>
@@ -169,7 +168,7 @@
                 <tbody>
                   <tr><th scope="row">A Unicode line separator (U+2028) in page text split recording lines partway through</th><td>Changed to split only on newlines (\n)</td></tr>
                   <tr><th scope="row">The replay process tried to connect to the cloud metadata service at import time</th><td>Fixed so nothing goes outside during replay</td></tr>
-                  <tr><th scope="row">During a week waiting for review, the development branch moved ahead by 32 commits and the way reference master data was loaded changed</th><td>Moved the recording point outside the loading function, rebased the 7 PRs, and re-recorded only the missing calls (232 s)</td></tr>
+                  <tr><th scope="row">During a week waiting for review, the development branch moved ahead by 32 commits and the way reference master data was loaded changed</th><td>Moved the recording point outside the loading function, rebased the 7 PRs, and re-recorded only the cache-missed calls (232 s, versus 942 s to record from scratch)</td></tr>
                 </tbody>
               </table>
             </div>

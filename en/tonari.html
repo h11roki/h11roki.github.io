@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="../assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="../assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="../assets/main.js?v=20261108h" defer></script>
+  <script src="../assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -49,6 +49,11 @@
         <p class="eyebrow">Team project (4 members) · JPHACKS 2026 · 2026.10</p>
         <h1>tonari<br>An AI tutor that speaks up only when you're stuck, and never gives away the answer</h1>
         <p class="lead">A smartphone watches you write on paper, and only when your hand stops does it show the next step, not the answer, by voice and subtitles. We entered JPHACKS 2026 as a team of 4 and built and released it during the 2-day Hack Day (October 17–18).</p>
+        <dl class="tldr" aria-label="Summary in three lines">
+          <div><dt>Problem</dt><dd>Asking an AI for help with homework means taking a photo and typing a question, so your hand stops. And the AI gives away the answer.</dd></div>
+          <div><dt>What I did</dt><dd>Built in 2 days by a team of 4. I handled the API server (state management, hint generation, answer-leak checks), stillness detection, deployment, and the setup that let teammates build screens in parallel with AI (OpenAPI with mocks, git hooks).</dd></div>
+          <div><dt>Result</dt><dd>On a 55-item evaluation set, the answer-leak check went from missing 16/24 leaks to 0/24, with 0/31 false positives. These numbers are on the set I used to fix the check; it hasn't been measured on unseen data yet.</dd></div>
+        </dl>
         <div class="link-row">
           <a class="btn btn-primary" href="https://youtube.com/shorts/04hRV0uHNMU">Watch the demo video <span aria-hidden="true">↗</span></a>
           <a class="btn" href="https://github.com/jphacks/os_2601">GitHub <span aria-hidden="true">↗</span></a>

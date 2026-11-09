@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108h" defer></script>
+  <script src="assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -51,9 +51,10 @@
           <h1 class="hero-name" id="hero-title"><ruby>髙橋<rt>たかはし</rt></ruby> <ruby>浩樹<rt>ひろき</rt></ruby></h1>
           <dl class="hero-facts">
             <div><dt>大学</dt><dd>立命館大学 理工学部 電子情報工学科 3 回生（2028 年 3 月 卒業予定）</dd></div>
-            <div><dt>インターン</dt><dd>Baseconnect 株式会社　AI エンジニア（2026 年 4 月〜）</dd></div>
+            <div><dt>インターン</dt><dd>京都のベンチャー企業　AI エンジニア（2026 年 4 月〜）</dd></div>
+            <div><dt>志望</dt><dd>LLM を組み込んだプロダクトを、評価の設計から本番での改善まで担うエンジニア</dd></div>
           </dl>
-          <p class="lead">大学 3 年の春から Baseconnect で長期インターンをしていて、営業向け企業データベースのデータを作る本番の LLM パイプラインの精度改善と、その評価の仕組みを担当しています。個人では、なりたい職業から履修計画を組む Web アプリ <a href="shirube.html">shirube</a> を、設計から本番公開まで一人で作りました。</p>
+          <p class="lead">大学 3 年の春から京都のベンチャー企業で長期インターンをしていて、営業向け企業データベースのデータを作る本番の LLM パイプラインの精度改善と、その評価の仕組みを担当しています。個人では、なりたい職業から履修計画を組む Web アプリ <a href="shirube.html">shirube</a> を、設計から本番公開まで一人で作りました。</p>
           <div class="hero-actions">
             <a class="btn" href="https://github.com/h11roki">
               <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -74,7 +75,7 @@
           <li>
             <a href="eval.html">
               <span class="entry-kind">仕事 / インターン</span>
-              <span class="entry-title">評価の高速化<span>900 店舗で 2〜3 時間かかっていた LLM の評価を、約 8 分の見込みに（100 店舗は実測 48 秒）</span></span>
+              <span class="entry-title">評価の高速化<span>外部呼び出しを記録して再生し、100 店舗を 48 秒・毎回同じ結果で採点（実測）</span></span>
               <span class="entry-arrow" aria-hidden="true">→</span>
             </a>
           </li>
@@ -116,10 +117,10 @@
                 <p class="project-meta"><span>個人開発</span><span>2026.10–</span><span class="live">本番公開中</span></p>
                 <h3 id="p-shirube"><a href="shirube.html">shirube <small>道標</small></a></h3>
                 <p class="project-catch">なりたい職業から、取る授業とその理由、卒業までの時間割を組む Web アプリ</p>
-                <div class="mini-stat"><b>27.6% → 21.6%</b><span>選んだ授業のうち、関係のない授業の割合。費用は 1 件 0.83 円のまま（改善前後を交互に流して比較、p = 0.023）</span></div>
+                <div class="mini-stat"><b>0.52 → 0.72</b><span>作り直したときの結果の一致度（Jaccard）。揺れを小さくし、費用は 1 件 0.83 円のまま（改善前後を交互に流して比較、p &lt; 0.001）</span></div>
               </div>
               <div>
-                <p class="project-desc">職業名を入れると、LLM が必要なスキルを読み取り、シラバスを埋め込み検索して候補を集め、LLM が候補を読み直して理由つきで授業を選び、学期ごとの時間割に並べます。改善を始める前に精度・揺れ・費用を測る評価の仕組みを作り、変更を採るかどうかはそれで決めました。</p>
+                <p class="project-desc">職業名を入れると、LLM が必要なスキルを読み取り、シラバスを埋め込み検索して候補を集め、LLM がリランクして理由つきで授業を選び、学期ごとの時間割に並べます。改善を始める前に精度・非決定性（揺れ）・費用を測る評価の仕組みを作り、変更を採るかどうかはそれで決めました。</p>
                 <ul class="tags" aria-label="使った技術">
                   <li>Next.js</li><li>FastAPI</li><li>PostgreSQL + pgvector</li><li>OpenAI API</li><li>AWS EC2</li><li>Docker Compose</li><li>GitHub Actions</li>
                 </ul>

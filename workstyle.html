@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>仕事の進め方 | 髙橋 浩樹</title>
-  <meta name="description" content="仕事の進め方。数字で採否を決めて判断を残す。データの修正と再発防止を組で入れ、誤りを原因別に数え、変更は同じ店舗で前後を比べる。ルールと LLM、AI と自分の分担。">
+  <meta name="description" content="仕事の進め方。数字で採否を決めて判断を残す。データの修正と再発防止を組で入れ、変更は同じ店舗で前後を比べる。ルールと LLM、AI と自分の分担。">
   <meta property="og:type" content="article">
   <meta property="og:title" content="仕事の進め方 | 髙橋 浩樹">
   <meta property="og:description" content="数字で採否を決めて判断を残す。データの誤りは直すだけでなく、同じ誤りを二度と入れない。">
@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108h" defer></script>
+  <script src="assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -46,7 +46,7 @@
     <div class="wrap">
       <div class="doc-hero">
         <p class="crumbs"><a href="index.html">トップ</a> / 仕事 / 仕事の進め方</p>
-        <p class="eyebrow">Baseconnect 株式会社 ・ 長期インターン ・ 個人開発</p>
+        <p class="eyebrow">京都のベンチャー企業 ・ 長期インターン ・ 個人開発</p>
         <h1>仕事の進め方</h1>
         <p class="lead">数字で採否を決め、判断を残す。データの誤りは直すだけでなく、同じ誤りを二度と入れない。インターンと個人開発で続けている進め方です。</p>
       </div>
@@ -58,7 +58,6 @@
             <li><a href="#principles">大切にしていること</a></li>
             <li><a href="#fixes">修正の例</a></li>
             <li><a href="#prevent">直して、入口でも止める</a></li>
-            <li><a href="#causes">誤りを原因別に数える</a></li>
             <li><a href="#compare">前後を比べる</a></li>
             <li><a href="#rules">ルールと LLM の分担</a></li>
             <li><a href="#monitoring">監視の穴まで追う</a></li>
@@ -81,17 +80,17 @@
               <div class="principle reveal">
                 <h3>数字が上がったときほど、疑う</h3>
                 <p>改善に使ったデータで上がった数字は、本番の精度とは限りません。理由を説明できない改善は採りません。</p>
-                <p class="evidence"><b>インターン</b>　自分たちが入れた出典のない 14 行の対応表が精度の約 2pt を作っていた。本番では根拠なく約 4,400 店舗の答えを変えるので、数字が下がるのを承知で外した。</p>
+                <p class="evidence"><b>インターン</b>　自分が承認して入れた出典のない 14 行の対応表が、精度の約 2pt を作っていたので、数字が下がるのを承知で外した（<a href="work.html#challenges">精度改善の 04</a>）。</p>
               </div>
               <div class="principle reveal">
                 <h3>自分の変更でも、測って戻す</h3>
-                <p>増えた正解だけでなく、新しく生んだ誤りも数えて採否を決めます。PR には「正解 +16 ／ 誤り −2」のように両方を書きます。</p>
-                <p class="evidence"><b>インターン</b>　LLM の出力形式を変えた自分の変更 2 件が、応答の解析失敗を 8 → 364 件、2 → 29 件に増やしていた。撤回して、JSON の型を強制しない呼び出しだったという共通の原因を突き止めた。</p>
+                <p>増えた正解だけでなく、新しく生んだ誤りも数えて採否を決めます。</p>
+                <p class="evidence"><b>インターン</b>　抽出漏れを減らそうと検索語を広げた自分の変更は、増えた正解より新しく生んだ誤りの方が多かったので、自分で戻した。</p>
               </div>
               <div class="principle reveal">
                 <h3>判断を、文章で残す</h3>
                 <p>設計の選択肢と、採らなかった理由を、実装より先に ADR（設計判断の記録）に書きます。</p>
-                <p class="evidence"><b>shirube</b>　ADR は 99 本（2026 年 11 月 8 日時点）。採らなかった改善 3 件も、数字と理由を残している。</p>
+                <p class="evidence"><b>shirube</b>　例：関係のない授業が増えるのを承知で、網羅を優先した判断（<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0080-selection-coverage.md">ADR 0080</a>）。採らなかった改善 3 件も、数字と理由を残している。</p>
               </div>
             </div>
           </section>
@@ -140,26 +139,15 @@
             <p style="margin-top:1.2em">これまでに、電話番号の表記（中継番号・内線・+81）、地名だけの店名や住所が混ざった店名、座標、全曜日が定休の営業時間、開業日の桁落ち、店舗として扱わない業種、1 つの URL への大量の紐づけを、この形で直しました。</p>
           </section>
 
-          <section id="causes" aria-labelledby="h-causes">
-            <h2 id="h-causes"><span class="idx">04</span>誤りを、原因別に数える</h2>
-            <p><strong>直す場所は、件数で決める。</strong>判定の記録に、値を消した段とその材料、LLM が退けた候補の理由、例外の実際の型を残し、誤りを 4 つの原因に機械的に分けています。どこを直せば何件動くかが見えるので、件数の多い所から手を付けます。</p>
-            <ul class="chips" aria-label="誤りの分け方">
-              <li>材料が無い</li>
-              <li>候補にしていない</li>
-              <li>判定で落ちた</li>
-              <li>別の法人になった</li>
-            </ul>
-          </section>
-
           <section id="compare" aria-labelledby="h-compare">
-            <h2 id="h-compare"><span class="idx">05</span>変更は、同じ店舗で前後を比べる</h2>
-            <p><strong>正しくなった件数と、新しく生んだ誤りの両方を数える。</strong>同じ店舗・同じ基準で変更の前後を比べ、PR には次のように両方を書きます。同じコードを流し直すだけで数十店舗の結果が入れ替わるので、取得したページが前後で同じ店舗だけで比べます。</p>
+            <h2 id="h-compare"><span class="idx">04</span>変更は、同じ店舗で前後を比べる</h2>
+            <p><strong>正しくなった件数と、新しく生んだ誤りの両方を数える。</strong>同じ店舗・同じ基準で変更の前後を比べ、PR には次のように両方を書きます。</p>
             <p class="diff-example" aria-label="PR に書く例：正解 プラス 16、誤り マイナス 2"><span class="plus">正解 +16</span><span>／</span><span class="minus">誤り −2</span></p>
-            <p style="margin-top:1em">抽出漏れを減らそうと検索語を広げた自分の変更は、差し引きでマイナスだったので自分で戻しました。</p>
+            <p style="margin-top:1em">誤りの原因の分け方と、非決定性（実行ごとの揺れ）の切り離し方は、<a href="work.html#challenges">精度改善のページ</a>に書いています。</p>
           </section>
 
           <section id="rules" aria-labelledby="h-rules">
-            <h2 id="h-rules"><span class="idx">06</span>ルールで決めるもの、LLM に任せるもの</h2>
+            <h2 id="h-rules"><span class="idx">05</span>ルールで決めるもの、LLM に任せるもの</h2>
             <p><strong>条件を書けるものはルール、文脈を読むものは LLM。</strong>電話番号や日付の表記、登記系サイトの除外、法人番号での名寄せのように、条件をはっきり書けるものはルールで処理します。ページの会社がどの立場で載っているか（運営会社か、求人の募集主か、施設の管理会社か）のように文脈を読む判断は LLM に任せ、判断の材料を渡します。LLM の出力は理由を先に書かせ、その順序はテストで固定しています。</p>
             <div class="compare">
               <div>
@@ -184,7 +172,7 @@
           </section>
 
           <section id="monitoring" aria-labelledby="h-monitoring">
-            <h2 id="h-monitoring"><span class="idx">07</span>原因を、監視の穴まで追う</h2>
+            <h2 id="h-monitoring"><span class="idx">06</span>原因を、監視の穴まで追う</h2>
             <p><strong>店舗が増えない理由を、データと仕組みの両方から。</strong>店舗のデータが増えていないように見えたとき、全行の作成日を調べて、ある時期から新しい店舗が 1 件も作られていないと特定しました。日次の監視が状態の変化しか数えておらず、収集が止まっても気づけない作りだったことも指摘しました。旧収集の検索語から検索した範囲を復元し、まだ検索していない業種と、回収できる店舗数の見込みを示しました。</p>
             <ol class="flow" style="--n:4" aria-label="調べた順">
               <li><b>作成日を数える</b>全行の作成日</li>
@@ -195,7 +183,7 @@
           </section>
 
           <section id="ai" aria-labelledby="h-ai">
-            <h2 id="h-ai"><span class="idx">08</span>AI との分担</h2>
+            <h2 id="h-ai"><span class="idx">07</span>AI との分担</h2>
             <p><strong>速さは AI に、どれを採るかは自分で決める。</strong>調査と実装の多くは Claude Code に任せています。誤答・過抽出・抽出漏れといった症状ごとに分析のセッションを分けて並列で動かし、全セッションが読む前提（定義、数字の出し方、報告の単位）は自分が書きます。AI の結論には根拠のデータ行を示させ、別のセッションに独立して確かめさせて、裏付けの無いものは差し戻します。AI が 66 件に影響するとした不具合が、確かめると 1 件だったこともあります。</p>
             <p>どの結論を採るかは自分が決め、判断の理由、採らなかった案、測った値は PR の本文に残します。</p>
             <div class="org-chart" role="img" aria-label="自分が定義と測り方を書き、統括セッションが施策をまとめ、誤答・過抽出・抽出漏れを分析する 3 つのセッションに分け、検証セッションが結論の裏を取って誤りなら差し戻す体制の図">
@@ -215,7 +203,7 @@
           </section>
 
           <section id="tools" aria-labelledby="h-tools">
-            <h2 id="h-tools"><span class="idx">09</span>仕事の不便は、道具で減らす</h2>
+            <h2 id="h-tools"><span class="idx">08</span>仕事の不便は、道具で減らす</h2>
             <p><strong>自分とチームが繰り返す作業から。</strong>マージされた PR を毎週分類して Slack に投稿する仕組み（GitHub Actions）を作り、分類できなかった PR が見えるようにして、PR タイトルの決まりを 2 つのリポジトリの開発ガイドに入れました。評価を速く回す基盤（<a href="eval.html">評価の高速化</a>）も、施策を試すたびに数時間待つ不便から始まっています。</p>
             <ol class="flow" style="--n:3" aria-label="週次の PR まとめ">
               <li><b>マージされた PR を集める</b>GitHub Actions</li>
@@ -225,7 +213,7 @@
           </section>
 
           <section id="database" aria-labelledby="h-database">
-            <h2 id="h-database"><span class="idx">10</span>データベース・API の設計</h2>
+            <h2 id="h-database"><span class="idx">09</span>データベース・API の設計</h2>
             <p>パイプラインの出力を受け取る本番のデータベースと API（TypeScript・PostgreSQL）も担当しています。</p>
 
             <div class="case">

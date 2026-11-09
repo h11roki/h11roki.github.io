@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="../assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="../assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="../assets/main.js?v=20261108h" defer></script>
+  <script src="../assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -48,7 +48,12 @@
         <p class="crumbs"><a href="index.html">Home</a> / Products / shirube</p>
         <p class="eyebrow">Personal project · 2026.10– · Live in production</p>
         <h1>shirube (道標, "signpost")<br>From the job you want to a timetable through graduation</h1>
-        <p class="lead">Enter a job title, and an LLM works out the skills it requires, embedding search over the syllabi gathers candidate courses, an LLM rereads the candidates and picks courses with a reason for each (RAG with LLM reranking), and the courses are laid out in a semester-by-semester timetable. I designed it alone and launched it in production. Before starting on improvements, I built an evaluation framework that measures accuracy, variation and cost, and that is what decides whether a change gets adopted.</p>
+        <p class="lead">Enter a job title, and an LLM works out the skills it requires, embedding search over the syllabi gathers candidate courses, an LLM rereads the candidates and picks courses with a reason for each (RAG with LLM reranking), and the courses are laid out in a semester-by-semester timetable. I designed it alone and launched it in production. Before starting on improvements, I built an evaluation framework that measures accuracy, nondeterminism (variation) and cost, and that is what decides whether a change gets adopted.</p>
+        <dl class="tldr" aria-label="Summary in three lines">
+          <div><dt>Problem</dt><dd>Reading syllabi doesn't tell you where a course will matter in a future job. Jobs and courses use different words (data scientist vs. probability and statistics), so keyword search can't connect them.</dd></div>
+          <div><dt>What I did</dt><dd>Built and launched, solo, a web app where an LLM extracts skills from a job title, vector search runs over the syllabi, an LLM reranks the candidates and picks courses with reasons, and the courses are laid out in a timetable. I built the evaluation set (50 dev jobs, 20 holdout jobs) and the statistical tests first, and used them to decide which changes to adopt.</dd></div>
+          <div><dt>Result</dt><dd>At an unchanged cost of ¥0.83 per roadmap, raised the agreement between regenerated results (Jaccard) from 0.52 to 0.72 (p &lt; 0.001). On the 20 holdout jobs, whose per-job results I never looked at, the share of irrelevant courses was 17.5%, on par with the dev set (16.4%) (one run each).</dd></div>
+        </dl>
         <div class="link-row">
           <a class="btn btn-primary" href="https://shirube.duckdns.org">Open demo <span aria-hidden="true">↗</span></a>
           <a class="btn" href="https://github.com/h11roki/Shirube">GitHub <span aria-hidden="true">↗</span></a>
@@ -87,7 +92,7 @@
               <dt>Timeline</dt>
               <dd>October 14, 2026 – present (ongoing). Launched in production about two and a half weeks after starting</dd>
               <dt>Team</dt>
-              <dd>Solo. Claude Code wrote most of the code; I decided the design, the evaluation criteria and which improvements to adopt, and recorded them in ADRs (99 as of November 8, 2026)</dd>
+              <dd>Solo. Claude Code wrote most of the code; I decided the design, the evaluation criteria and which improvements to adopt, and recorded them in ADRs (architecture decision records). The hardest calls were fixing the stages instead of using an agent (<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a>), rebuilding the comparison method after time-of-day drift produced false differences (<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0055-interleaved-runs.md">0055</a>), and favoring coverage while accepting more irrelevant courses (<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0080-selection-coverage.md">0080</a>)</dd>
               <dt>My role</dt>
               <dd>All of it: planning, design, implementation, evaluation, and production infrastructure and operations</dd>
               <dt>Stack</dt>
@@ -129,7 +134,7 @@
 
           <section id="results" aria-labelledby="h-results">
             <h2 id="h-results"><span class="idx">04</span>Results</h2>
-            <p>I compared the original baseline with the improved configuration using interleaved runs in the same time window. Without changing the cost, irrelevant courses went down and the variation between regenerations shrank.</p>
+            <p>I compared the original baseline with the improved configuration using interleaved runs in the same time window. Without changing the cost, irrelevant courses went down and the variation (nondeterminism) between regenerations shrank. The current irrelevant share, after later changes, is in <a href="#now">11</a>.</p>
             <div class="table-wrap">
               <table>
                 <caption>30 dev jobs × 3 runs, October 24, 2026, per-job permutation test</caption>
@@ -137,7 +142,7 @@
                 <tbody>
                   <tr><th scope="row">Share of selected courses judged irrelevant (a proxy for errors)</th><td class="n">27.6%</td><td class="n good">21.6%</td><td class="n">0.023</td></tr>
                   <tr><th scope="row">Core-course precision</th><td class="n">35.7%</td><td class="n good">42.1%</td><td class="n">0.004</td></tr>
-                  <tr><th scope="row">Overlap between regenerated results (Jaccard; higher = less variation)</th><td class="n">0.52</td><td class="n good">0.72</td><td class="n">&lt; 0.001</td></tr>
+                  <tr><th scope="row">Agreement between regenerated results (Jaccard; higher = less variation)</th><td class="n">0.52</td><td class="n good">0.72</td><td class="n">&lt; 0.001</td></tr>
                   <tr><th scope="row">LLM cost per roadmap</th><td class="n">¥0.83</td><td class="n">¥0.83</td><td class="n">—</td></tr>
                 </tbody>
               </table>
@@ -146,16 +151,16 @@
 
             <h3>Technical highlights</h3>
             <ol class="bullets">
-              <li>Instead of an agent, a fixed four-stage pipeline: Interpret (LLM), Retrieve (embeddings), Rerank (LLM), Schedule (algorithm). This makes it possible to count which stage dropped an expected course.</li>
+              <li>Instead of an agent, a fixed four-stage pipeline: Interpret (LLM), Retrieve (vector search), Rerank (LLM), Schedule (algorithm). This makes it possible to count which stage dropped an expected course.</li>
               <li>Built the evaluation set (50 dev jobs, 20 holdout jobs) and the comparison tooling first, and wrote the adoption criteria in an ADR before each change, then measured.</li>
-              <li>A 3-way majority vote reduced errors and variation; the added cost was recovered by narrowing the candidates, prompt (input) caching, and reusing interpretations.</li>
+              <li>A 3-way majority vote (self-consistency) reduced errors and variation; the added cost was recovered by narrowing the candidates, prompt (input) caching, and reusing interpretations.</li>
               <li>Built for public release: a daily limit, prepaid billing, structured output that cannot return a course outside the candidates, and external monitoring every 15 minutes.</li>
             </ol>
           </section>
 
           <section id="architecture" aria-labelledby="h-architecture">
             <h2 id="h-architecture"><span class="idx">05</span>Pipeline and architecture</h2>
-            <p>Rather than using an agent, I fixed recommendation as four stages: Interpret (LLM), Retrieve (embeddings), Rerank (LLM) and Schedule (algorithm). This lets me count which stage dropped an expected course.</p>
+            <p>Rather than using an agent, I fixed recommendation as four stages: Interpret (LLM), Retrieve (vector search), Rerank (LLM) and Schedule (algorithm). This lets me count which stage dropped an expected course.</p>
             <p class="table-note">FastAPI (Clean Architecture), Next.js, PostgreSQL + pgvector, AWS EC2 with Docker Compose, GitHub Actions. The numbers in each box are the ADRs recording the decisions (click to read them on GitHub).</p>
 
             <div class="arch" role="group" aria-label="Pipeline and architecture">
@@ -255,12 +260,12 @@
           <section id="problems" aria-labelledby="h-problems">
             <h2 id="h-problems"><span class="idx">08</span>Challenges and solutions</h2>
             <div class="case">
-              <div class="case-head"><span class="idx">01</span><h3>LLM answers varied, and irrelevant courses got mixed in</h3></div>
+              <div class="case-head"><span class="idx">01</span><h3>LLM answers were nondeterministic, and irrelevant courses got mixed in</h3></div>
               <dl>
                 <dt>Problem</dt>
-                <dd>With the original baseline, 23% of courses were irrelevant and the overlap between regenerations was 0.45.</dd>
+                <dd>With the original baseline, 23% of courses were irrelevant and the agreement (Jaccard) between regenerations was 0.45.</dd>
                 <dt>Solution</dt>
-                <dd>Calling Rerank 3 times in parallel and keeping only courses with 2 or more votes cut the irrelevant share to 10%, but the cost rose from ¥0.81 to ¥1.57. So I narrowed the candidates from 30 to 20 (¥1.14), delayed the second vote to raise the prompt cache hit rate from 50% to 63% (¥1.01), and reused job interpretations. In interleaved runs against the original baseline, the cost stayed at ¥0.83 while the irrelevant share went from 27.6% to 21.6% and the overlap from 0.52 to 0.72.</dd>
+                <dd>Calling Rerank 3 times in parallel and keeping only courses with 2 or more votes cut the irrelevant share to 10%, but the cost rose from ¥0.81 to ¥1.57. So I narrowed the candidates from 30 to 20 (¥1.14), delayed the second vote to raise the prompt cache hit rate from 50% to 63% (¥1.01), and reused job interpretations. In interleaved runs against the original baseline, the cost stayed at ¥0.83 while the irrelevant share went from 27.6% to 21.6% and the agreement from 0.52 to 0.72.</dd>
               </dl>
             </div>
             <div class="case">
@@ -305,7 +310,7 @@
                 <thead><tr><th scope="col">Change</th><th scope="col">Target</th><th scope="col">Result</th><th scope="col">Decision</th></tr></thead>
                 <tbody>
                   <tr><th scope="row">Make Rerank a 3-way majority vote</th><td class="aim">Irrelevant</td><td>Irrelevant 23% → 10% (significant). Cost about 1.9×</td><td><span class="verdict yes">Adopted</span><br>Cost recovered separately</td></tr>
-                  <tr><th scope="row">Reuse job interpretations</th><td class="aim">Variation and cost</td><td>Overlap 0.56 → 0.73 (significant). For already-cached jobs, ¥1.00 → ¥0.59</td><td><span class="verdict yes">Adopted</span></td></tr>
+                  <tr><th scope="row">Reuse job interpretations</th><td class="aim">Variation and cost</td><td>Agreement 0.56 → 0.73 (significant). For already-cached jobs, ¥1.00 → ¥0.59</td><td><span class="verdict yes">Adopted</span></td></tr>
                   <tr><th scope="row">Search with per-skill queries</th><td class="aim">Candidate recall</td><td>Candidate recall +3.3 points over 50 jobs (p = 0.391, not significant). Irrelevant 23.0% → 15.1% (p = 0.001)</td><td><span class="verdict yes">Adopted</span><br>No regression, fewer errors</td></tr>
                   <tr><th scope="row">Add the department's fields to the Interpret instructions</th><td class="aim">Candidate recall</td><td>Candidate recall 0.910 → 0.865 (p = 0.105). The model copied the field terms, crowding out job-specific skills</td><td><span class="verdict no">Rejected</span></td></tr>
                   <tr><th scope="row">Don't select borderline courses</th><td class="aim">Irrelevant</td><td>Irrelevant: dev 16.4% → 10.6% (p = 0.004), holdout 15.0% → 12.2% (p = 0.210), so half the effect</td><td><span class="verdict yes">Adopted</span><br>Later replaced by the next row</td></tr>

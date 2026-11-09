@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>shirube（道標）：企画と技術設計 | 髙橋 浩樹</title>
-  <meta name="description" content="なりたい職業から、取る授業とその理由、卒業までの時間割を組む Web アプリ shirube。RAG と LLM による授業の選び直しを、評価データと検定で直しています。">
+  <meta name="description" content="なりたい職業から、取る授業とその理由、卒業までの時間割を組む Web アプリ shirube。RAG と LLM によるリランクを、評価データと検定で直しています。">
   <meta property="og:type" content="article">
   <meta property="og:title" content="shirube（道標）：企画と技術設計 | 髙橋 浩樹">
   <meta property="og:description" content="職業からシラバスを RAG で引き、理由つきの時間割を組む。個人で設計から本番公開まで。">
@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108h" defer></script>
+  <script src="assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -48,7 +48,12 @@
         <p class="crumbs"><a href="index.html">トップ</a> / 開発したプロダクト / shirube</p>
         <p class="eyebrow">個人開発 ・ 2026.10– ・ 本番公開中</p>
         <h1>shirube（道標）<br>なりたい職業から、卒業までの時間割を組む</h1>
-        <p class="lead">職業名を入れると、LLM が必要なスキルを読み取り、シラバスを埋め込み検索して候補を集め、LLM が候補を読み直して理由つきで授業を選び（RAG と LLM によるリランク）、学期ごとの時間割に並べます。一人で設計し、本番に公開しました。改善を始める前に、精度・揺れ・費用を測る評価の仕組みを作り、変更を採るかどうかはそれで決めています。</p>
+        <p class="lead">職業名を入れると、LLM が必要なスキルを読み取り、シラバスを埋め込み検索して候補を集め、LLM が候補を読み直して理由つきで授業を選び（RAG と LLM によるリランク）、学期ごとの時間割に並べます。一人で設計し、本番に公開しました。改善を始める前に、精度・非決定性（揺れ）・費用を測る評価の仕組みを作り、変更を採るかどうかはそれで決めています。</p>
+        <dl class="tldr" aria-label="3 行の要約">
+          <div><dt>課題</dt><dd>授業が将来の仕事のどこで役立つかは、シラバスを読んでも分かりにくい。職業と授業は使う言葉が違い（データサイエンティストと確率統計など）、キーワード検索ではつながらない。</dd></div>
+          <div><dt>やったこと</dt><dd>職業名から LLM でスキルを読み取り、シラバスをベクトル検索し、LLM がリランクして理由つきで授業を選び、時間割に並べる Web アプリを一人で作って公開した。評価データ（開発用 50 職業・ホールドアウト 20 職業）と検定の仕組みを先に作り、変更の採否を決めた。</dd></div>
+          <div><dt>結果</dt><dd>費用を 1 件 0.83 円に据え置いたまま、作り直したときの結果の一致度（Jaccard）を 0.52 → 0.72 に上げた（p &lt; 0.001）。職業ごとの中身を見ていないホールドアウト 20 職業でも、関係のない授業の割合は 17.5% で、開発用（16.4%）と同じ水準（各 1 回の測定）。</dd></div>
+        </dl>
         <div class="link-row">
           <a class="btn btn-primary" href="https://shirube.duckdns.org">デモを開く <span aria-hidden="true">↗</span></a>
           <a class="btn" href="https://github.com/h11roki/Shirube">GitHub <span aria-hidden="true">↗</span></a>
@@ -87,7 +92,7 @@
               <dt>期間</dt>
               <dd>2026 年 10 月 14 日〜（継続中）。作り始めて約 2 週間半で本番に公開</dd>
               <dt>体制</dt>
-              <dd>個人。コードの多くは Claude Code に書かせ、設計、評価の条件、改善の採否は自分で決めて ADR に残した（99 本、2026 年 11 月 8 日時点）</dd>
+              <dd>個人。コードの多くは Claude Code に書かせ、設計、評価の条件、改善の採否は自分で決めて ADR（設計判断の記録）に残した。判断が難しかったのは、エージェントにせず段を固定した構成（<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a>）、時刻のずれで偽の差が出た比べ方の作り直し（<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0055-interleaved-runs.md">0055</a>）、関係のない授業が増えるのを承知で網羅を優先した判断（<a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0080-selection-coverage.md">0080</a>）</dd>
               <dt>担当範囲</dt>
               <dd>企画、設計、実装、評価、本番の構成と運用のすべて</dd>
               <dt>技術</dt>
@@ -129,7 +134,7 @@
 
           <section id="results" aria-labelledby="h-results">
             <h2 id="h-results"><span class="idx">04</span>成果</h2>
-            <p>最初の基準と改善後の設定を、同じ時間帯に交互に流して比べました。費用を変えずに、関係のない授業を減らし、作り直したときの揺れを小さくしました。</p>
+            <p>最初の基準と改善後の設定を、同じ時間帯に交互に流して比べました。費用を変えずに、関係のない授業を減らし、作り直したときの揺れ（非決定性）を小さくしました。関係のない授業の割合は、その後の変更を重ねた今の値を <a href="#now">11</a> に載せています。</p>
             <div class="table-wrap">
               <table>
                 <caption>開発用 30 職業 × 3 回、2026 年 10 月 24 日、職業ごとの並べ替え検定</caption>
@@ -137,7 +142,7 @@
                 <tbody>
                   <tr><th scope="row">選んだ授業のうち、関係なしの割合（誤りの目安）</th><td class="n">27.6%</td><td class="n good">21.6%</td><td class="n">0.023</td></tr>
                   <tr><th scope="row">柱の適合率</th><td class="n">35.7%</td><td class="n good">42.1%</td><td class="n">0.004</td></tr>
-                  <tr><th scope="row">作り直したときの結果の重なり（Jaccard。高いほど揺れが小さい）</th><td class="n">0.52</td><td class="n good">0.72</td><td class="n">&lt; 0.001</td></tr>
+                  <tr><th scope="row">作り直したときの結果の一致度（Jaccard。高いほど揺れが小さい）</th><td class="n">0.52</td><td class="n good">0.72</td><td class="n">&lt; 0.001</td></tr>
                   <tr><th scope="row">道標 1 件の LLM の費用</th><td class="n">0.83 円</td><td class="n">0.83 円</td><td class="n">—</td></tr>
                 </tbody>
               </table>
@@ -146,16 +151,16 @@
 
             <h3>技術面の特徴</h3>
             <ol class="bullets">
-              <li>エージェントにはせず、読み取り（LLM）、検索（埋め込み）、選び直し（LLM）、配置（アルゴリズム）の 4 段に固定した。期待する授業をどの段で落としたかまで数えられる。</li>
+              <li>エージェントにはせず、読み取り（LLM）、ベクトル検索、リランク（LLM）、配置（アルゴリズム）の 4 段に固定した。期待する授業をどの段で落としたかまで数えられる。</li>
               <li>評価データ（開発用 50 職業、ホールドアウト 20 職業）と比べる道具を先に作り、採る条件は変える前に ADR に書いてから測った。</li>
-              <li>3 回の多数決で誤りと揺れを減らし、増えた費用は候補の絞り込み、入力キャッシュ、読み取りの使い回しで戻した。</li>
+              <li>3 回の多数決（self-consistency）で誤りと揺れを減らし、増えた費用は候補の絞り込み、プロンプトキャッシュ、読み取りの使い回しで戻した。</li>
               <li>公開を前提に、1 日の上限、前払い、候補に無い授業を返せない構造化出力、15 分ごとの外からの監視を入れた。</li>
             </ol>
           </section>
 
           <section id="architecture" aria-labelledby="h-architecture">
             <h2 id="h-architecture"><span class="idx">05</span>処理の流れと構成</h2>
-            <p>推薦は、エージェントにはせず、読み取り（LLM）、検索（埋め込み）、選び直し（LLM）、配置（アルゴリズム）の 4 段に固定しました。期待する授業をどの段で落としたかまで数えるためです。</p>
+            <p>推薦は、エージェントにはせず、読み取り（LLM）、ベクトル検索、リランク（LLM）、配置（アルゴリズム）の 4 段に固定しました。期待する授業をどの段で落としたかまで数えるためです。</p>
             <p class="table-note">FastAPI（クリーンアーキテクチャ）、Next.js、PostgreSQL + pgvector、AWS EC2 と Docker Compose、GitHub Actions。各枠の番号は、判断を記録した ADR です（押すと GitHub で読めます）。</p>
 
             <div class="arch" role="group" aria-label="処理の流れと構成">
@@ -182,7 +187,7 @@
                 <ol class="arch-cells arch-flow">
                   <li><b>① 読み取り</b>gpt-5.4-mini。職業名を解釈、前提、スキル 3〜6 個に直す。職業名ごとに使い回す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0052-reading-cache.md">0052</a></span></li>
                   <li><b>② 検索</b>pgvector。職業全体とスキルごとのクエリの順位から交互に 20 件。全件を厳密に計算<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0063-search-by-skill.md">0063</a></span></li>
-                  <li><b>③ 選び直し</b>gpt-5.4-nano × 3。候補の抜粋を読み、柱と礎を理由つきで返す。3 回並列に呼び、2 票以上を残す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0023-foundation-links-core.md">0023</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0049-selection-votes.md">0049</a></span></li>
+                  <li><b>③ リランク</b>gpt-5.4-nano × 3。候補の抜粋を読み、柱と礎を理由つきで返す。3 回並列に呼び、2 票以上を残す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0023-foundation-links-core.md">0023</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0049-selection-votes.md">0049</a></span></li>
                   <li><b>④ 配置</b>自作のアルゴリズム。回生、学期、コマ、16 単位の上限を守り、貪欲法で詰める。LLM は使わない<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0007-greedy-timetable.md">0007</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0025-roadmap-candidates-by-semester.md">0025</a></span></li>
                 </ol>
                 <p class="arch-note"><b>推薦キャッシュ（7 日）</b>：職業名と条件、モデル、プロンプト、コードの指紋が同じなら ①〜③ を飛ばし、LLM を呼ばずに作る。コードを変えると前の結果は当たらなくなる<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0092-recommendation-cache.md">0092</a></span></p>
@@ -223,14 +228,14 @@
               </dl>
             </div>
             <div class="case">
-              <div class="case-head"><span class="idx">③</span><h3>選び直し（gpt-5.4-nano × 3）</h3></div>
+              <div class="case-head"><span class="idx">③</span><h3>リランク（gpt-5.4-nano × 3）</h3></div>
               <dl>
                 <dt>入力</dt>
                 <dd>柱と礎の定義と選ぶ順。職業、前提、スキル。候補 20 件の抜粋（概要 450 字、到達目標 250 字、各回のテーマ 350 字）。</dd>
                 <dt>出力</dt>
                 <dd>科目名と、前提にする柱は、候補の列挙（enum）に限る。理由は 80 字以内。</dd>
                 <dt>工夫</dt>
-                <dd>抜粋の切り方を、正解を作った判定者と同じにし、入力の違いが評価に混ざらないようにした。抜粋に無いことは書かせない。2 票目を 0.5 秒遅らせて、入力キャッシュに当てる。</dd>
+                <dd>抜粋の切り方を、正解を作った判定者と同じにし、入力の違いが評価に混ざらないようにした。抜粋に無いことは書かせない。2 票目を 0.5 秒遅らせて、プロンプトキャッシュに当てる。</dd>
               </dl>
             </div>
           </section>
@@ -244,7 +249,7 @@
                 <tbody>
                   <tr><th scope="row">エージェントにせず、段を固定したワークフローにする</th><td>エージェントにすると、どこで誤ったかを分けて測れない。段ごとに指標を持たせた。LLM の出力を道具の呼び出しや DB の問い合わせに使わないので、プロンプトインジェクションの影響も画面の文で止まる</td></tr>
                   <tr><th scope="row">検索で絞ってから、LLM が読み直す</th><td>検索の上位 10 件の約 2 割は、判定で関係なし。LLM が中身を読めば外せ、理由も根拠を持って書ける。全科目を読ませると入力が 5 倍以上になり、他の学科に広げられない</td></tr>
-                  <tr><th scope="row">段ごとにモデルを分ける</th><td>読み取りは、曖昧な職業名 4 件で前提を書けたのが mini は 4 件、nano は 1 件だったので mini。選び直しは 10 職業 × 2 回で nano が mini と同等以上、費用は約 4 分の 1 なので nano</td></tr>
+                  <tr><th scope="row">段ごとにモデルを分ける</th><td>読み取りは、曖昧な職業名 4 件で前提を書けたのが mini は 4 件、nano は 1 件だったので mini。リランクは 10 職業 × 2 回で nano が mini と同等以上、費用は約 4 分の 1 なので nano</td></tr>
                   <tr><th scope="row">スキルごとのクエリで検索する（クエリ分解）</th><td>取りこぼしの多くは、スキルが 1 つのクエリの中で薄まることが原因だった。50 職業で交互に比べ、関係なしが 23.0% から 15.1% に下がった（p = 0.001）</td></tr>
                   <tr><th scope="row">時間割は貪欲法、作成は非同期</th><td>LLM に組ませるとコマが重なる。同期で作ると、画面がタイムアウトしたあとに保存され、作り直しで費用が二重にかかる</td></tr>
                 </tbody>
@@ -255,12 +260,12 @@
           <section id="problems" aria-labelledby="h-problems">
             <h2 id="h-problems"><span class="idx">08</span>直面した課題と解決</h2>
             <div class="case">
-              <div class="case-head"><span class="idx">01</span><h3>LLM の答えが揺れ、関係のない授業が混ざった</h3></div>
+              <div class="case-head"><span class="idx">01</span><h3>LLM の答えが非決定的で、関係のない授業が混ざった</h3></div>
               <dl>
                 <dt>課題</dt>
-                <dd>最初の基準では、関係なしが 23%、作り直したときの重なりが 0.45 だった。</dd>
+                <dd>最初の基準では、関係なしが 23%、作り直したときの一致度（Jaccard）が 0.45 だった。</dd>
                 <dt>解決</dt>
-                <dd>選び直しを 3 回並列に呼んで 2 票以上だけ残すと、関係なしは 10% に下がったが、費用は 0.81 円から 1.57 円に増えた。そこで候補を 30 件から 20 件に絞り（1.14 円）、2 票目を遅らせて入力キャッシュの当たりを 50% から 63% に上げ（1.01 円）、職業の読み取りを使い回した。最初の基準と交互に流して比べると、同じ 0.83 円のまま、関係なしは 27.6% から 21.6%、重なりは 0.52 から 0.72 になった。</dd>
+                <dd>リランクを 3 回並列に呼んで 2 票以上だけ残すと、関係なしは 10% に下がったが、費用は 0.81 円から 1.57 円に増えた。そこで候補を 30 件から 20 件に絞り（1.14 円）、2 票目を遅らせてプロンプトキャッシュのヒット率を 50% から 63% に上げ（1.01 円）、職業の読み取りを使い回した。最初の基準と交互に流して比べると、同じ 0.83 円のまま、関係なしは 27.6% から 21.6%、一致度は 0.52 から 0.72 になった。</dd>
               </dl>
             </div>
             <div class="case">
@@ -293,7 +298,7 @@
             <ul class="bullets">
               <li><strong>A/A テストで偽の差が出た。</strong>同じ設定どうしでも、ブートストラップの区間では 10%（名目の 5% の 2 倍）で差ありと出た。職業ごとの並べ替え検定に替えると 5% に収まった。</li>
               <li><strong>流した時刻で結果がずれた。</strong>同じ設定とコードでも、別の時刻に流すと関係なしが 9 ポイントほど動いた。2 つの設定を職業と回ごとに交互に流し、時刻のずれを差から除いた。</li>
-              <li><strong>開発用に合わせ込んでいた。</strong>検索の改善は、直しを決めるときに見た 30 職業では候補の再現率が 6.4 ポイント上がったが、あとで足した 20 職業では 1.2 ポイント下がった。そこでホールドアウトを別に取っておくことにした。</li>
+              <li><strong>開発用に過学習していた。</strong>検索の改善は、直しを決めるときに見た 30 職業では候補の再現率が 6.4 ポイント上がったが、あとで足した 20 職業では 1.2 ポイント下がった。そこでホールドアウトを別に取っておくことにした。</li>
             </ul>
           </section>
 
@@ -304,8 +309,8 @@
               <table class="wide">
                 <thead><tr><th scope="col">変えたこと</th><th scope="col">ねらい</th><th scope="col">結果</th><th scope="col">判断</th></tr></thead>
                 <tbody>
-                  <tr><th scope="row">選び直しを 3 回の多数決にする</th><td class="aim">関係なし</td><td>関係なし 23% → 10%（差あり）。費用は約 1.9 倍</td><td><span class="verdict yes">採った</span><br>費用は別に戻した</td></tr>
-                  <tr><th scope="row">職業の読み取りを使い回す</th><td class="aim">揺れと費用</td><td>重なり 0.56 → 0.73（差あり）。覚えた職業は 1.00 円 → 0.59 円</td><td><span class="verdict yes">採った</span></td></tr>
+                  <tr><th scope="row">リランクを 3 回の多数決にする</th><td class="aim">関係なし</td><td>関係なし 23% → 10%（差あり）。費用は約 1.9 倍</td><td><span class="verdict yes">採った</span><br>費用は別に戻した</td></tr>
+                  <tr><th scope="row">職業の読み取りを使い回す</th><td class="aim">揺れと費用</td><td>一致度 0.56 → 0.73（差あり）。覚えた職業は 1.00 円 → 0.59 円</td><td><span class="verdict yes">採った</span></td></tr>
                   <tr><th scope="row">スキルごとのクエリで検索する</th><td class="aim">候補の再現率</td><td>候補の再現率は 50 職業で +3.3 ポイント（p = 0.391、差なし）。関係なしは 23.0% → 15.1%（p = 0.001）</td><td><span class="verdict yes">採った</span><br>悪化せず誤りが減った</td></tr>
                   <tr><th scope="row">読み取りの指示に学科の分野を書く</th><td class="aim">候補の再現率</td><td>候補の再現率 0.910 → 0.865（p = 0.105）。分野の言葉を写し、職業に固有のスキルが押し出された</td><td><span class="verdict no">採らなかった</span></td></tr>
                   <tr><th scope="row">迷った授業は選ばない</th><td class="aim">関係なし</td><td>関係なし 開発用 16.4% → 10.6%（p = 0.004）、ホールドアウト 15.0% → 12.2%（p = 0.210）で効き目は半分</td><td><span class="verdict yes">採った</span><br>のちに次の行で替えた</td></tr>
@@ -344,7 +349,7 @@
             <h3>次にやること</h3>
             <ul class="bullets">
               <li>学科の学生や教員に一部を判定してもらい、Claude の判定者との一致（κ）を測る。</li>
-              <li>期待する 151 件のうち、選び直しで落としたのが 13%、読み取りで 12%、検索で 3%。次は読み取りの揺れを直すが、同じ 50 職業で直し続けると合わせ込むので、見ていない職業を足してから確かめる。</li>
+              <li>期待する 151 件のうち、リランクで落としたのが 13%、読み取りで 12%、検索で 3%。次は読み取りの揺れを直すが、同じ 50 職業で直し続けると過学習するので、見ていない職業を足してから確かめる。</li>
               <li>履修登録の時期（3〜4 月）に学生に使ってもらい、作り直しの回数や、もう取ったと答えた授業を、作成の記録と合わせて見る。</li>
               <li>必修と卒業要件を入れ、時間割を整数計画に替える。先に、貪欲法で要件を満たせない道標の数を測る。</li>
             </ul>

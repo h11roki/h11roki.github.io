@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108h" defer></script>
+  <script src="assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -49,6 +49,11 @@
         <p class="eyebrow">チーム開発（4 人）・ JPHACKS 2026 ・ 2026.10</p>
         <h1>となり<br>詰まったときだけ声をかける、答えを言わない AI 家庭教師</h1>
         <p class="lead">紙に書いている手元をスマホで見て、手が止まったときだけ、答えではなく次の一歩を声と字幕で示します。JPHACKS 2026 に 4 人チームで出場し、Hack Day の 2 日間（10 月 17〜18 日）で作り、公開しました。</p>
+        <dl class="tldr" aria-label="3 行の要約">
+          <div><dt>課題</dt><dd>宿題で詰まって AI に聞くには、写真を撮って質問を打つ必要があり、手が止まる。しかも AI は答えを言ってしまう。</dd></div>
+          <div><dt>やったこと</dt><dd>4 人チームで 2 日間で開発。自分は API サーバ（状態の管理・ヒントの生成・答え漏れの検査）、手元の静止の判定、デプロイと、メンバーが AI と並行して画面を作れる仕組み（OpenAPI とモック、git フック）を担当した。</dd></div>
+          <div><dt>結果</dt><dd>答え漏れの検査で、評価セット 55 件の見逃しを 16/24 → 0/24、誤検知は 0/31。ただし検査を直すのに使ったセットでの値で、未見のデータではまだ測っていない。</dd></div>
+        </dl>
         <div class="link-row">
           <a class="btn btn-primary" href="https://youtube.com/shorts/04hRV0uHNMU">紹介動画を見る <span aria-hidden="true">↗</span></a>
           <a class="btn" href="https://github.com/jphacks/os_2601">GitHub <span aria-hidden="true">↗</span></a>

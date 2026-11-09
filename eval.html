@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>評価の高速化：LLM パイプラインの評価を数時間から数分に | 髙橋 浩樹</title>
-  <meta name="description" content="外部呼び出しの記録と再生で、施策を 1 つ試すたびに数時間かかっていた LLM パイプラインの評価を、ネットワークに触れず、毎回同じ結果で回せるようにした（900 店舗で 2〜3 時間 → 約 8 分の見込み。100 店舗を 48 秒で採点）。">
+  <title>評価の高速化：LLM パイプラインの評価を、100 店舗 48 秒・毎回同じ結果に | 髙橋 浩樹</title>
+  <meta name="description" content="外部呼び出しの記録と再生（record / replay）で、LLM パイプラインの評価をネットワークに触れず、毎回同じ結果で回せるようにした。100 店舗を 48 秒で採点（実測）。">
   <meta property="og:type" content="article">
   <meta property="og:title" content="評価の高速化 | 髙橋 浩樹">
-  <meta property="og:description" content="LLM パイプラインの評価を、外部呼び出しの記録と再生で数時間から数分に。">
+  <meta property="og:description" content="外部呼び出しの記録と再生で、LLM パイプラインの評価を 100 店舗 48 秒・毎回同じ結果に。">
   <link rel="alternate" hreflang="ja" href="https://h11roki.github.io/eval.html">
   <link rel="alternate" hreflang="en" href="https://h11roki.github.io/en/eval.html">
   <meta name="theme-color" content="#f6f6f2" media="(prefers-color-scheme: light)">
@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261108h">
+  <link rel="stylesheet" href="assets/style.css?v=20261109a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261108h" defer></script>
+  <script src="assets/main.js?v=20261109a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -46,14 +46,13 @@
     <div class="wrap">
       <div class="doc-hero">
         <p class="crumbs"><a href="index.html">トップ</a> / 仕事 / 評価の高速化</p>
-        <p class="eyebrow">Baseconnect 株式会社 ・ 長期インターン ・ 設計・実装</p>
-        <h1>LLM パイプラインの評価を、数時間から数分に</h1>
-        <p class="lead">施策を 1 つ試すたびに数時間待っていた評価を、外部呼び出しの記録と再生で、ネットワークに触れず、毎回同じ結果で回せるようにしました。</p>
-        <div class="stat-row">
-          <div class="mini-stat"><b>2〜3 時間 → 約 8 分</b><span>900 店舗の評価。これまでは 20 並列で 2〜3 時間かかり、外部サービスの状態で結果も揺れた。約 8 分は、100 店舗を 48 秒で採点した実測からの見込み</span></div>
-          <div class="mini-stat"><b>48 秒</b><span>100 店舗を 8 並列で採点した実測。外への接続 0、毎回同じ結果</span></div>
-          <div class="mini-stat"><b>942 → 232 秒</b><span>コードを変えた後の取り直し（20 店舗）。足りない呼び出しだけを取り直す</span></div>
-        </div>
+        <p class="eyebrow">京都のベンチャー企業 ・ 長期インターン ・ 設計・実装</p>
+        <h1>LLM パイプラインの評価を、100 店舗 48 秒・毎回同じ結果に</h1>
+        <dl class="tldr" aria-label="3 行の要約">
+          <div><dt>課題</dt><dd>施策を 1 つ試すたびに、900 店舗の評価を 20 並列で 2〜3 時間待っていた。検索・クロール・LLM の外部呼び出しで結果が非決定的になり、前後の差が施策の効果か分からなかった。</dd></div>
+          <div><dt>やったこと</dt><dd>外部呼び出しをクライアントの単位で記録し、評価ではネットワークを塞いで記録から返す仕組み（record / replay）を設計・実装した。PR ごとに CI でも回る。</dd></div>
+          <div><dt>結果（実測）</dt><dd>100 店舗を 8 並列で 48 秒で採点。外への接続は 0 で、何度流しても同じ結果。コードを変えた後は、キャッシュミスした呼び出しだけを取り直す（20 店舗で、最初の記録の 942 秒に対し 232 秒）。</dd></div>
+        </dl>
       </div>
 
       <div class="doc-layout">
@@ -108,7 +107,7 @@
           <section id="key" aria-labelledby="h-key">
             <h2 id="h-key"><span class="idx">03</span>照合のキーは「結果を決める入力」</h2>
             <p><strong>URL ではなく、サービス・メソッド・入力で引く。</strong>先行の試作は HTTP の層で URL だけを照合していて、住所の照合サービスに別の住所を送った呼び出しに、前の住所の結果を返していました。記録の単位を外部サービスのクライアントにし、キーを（サービス、メソッド、結果を決める入力）にして、この取り違えが起きない形にしました。</p>
-            <p>LLM の記録のキーには、プロンプトのテンプレート（system・user・出力スキーマ）のハッシュも入れました。文言を 1 つ変えると、その呼び出しだけが記録から外れて取り直されることを確かめています。</p>
+            <p>LLM の記録のキーには、プロンプトのテンプレート（system・user・出力スキーマ）のハッシュも入れました。文言を 1 つ変えると、その呼び出しだけがキャッシュミスになって取り直されることを確かめています。</p>
             <div class="table-wrap">
               <table>
                 <caption>照合のキー</caption>
@@ -116,7 +115,7 @@
                 <tbody>
                   <tr><th scope="row">URL だけ（試作）</th><td>別の住所の結果が返った</td></tr>
                   <tr><th scope="row">サービス・メソッド・結果を決める入力</th><td class="good">同じ入力にだけ同じ結果を返す</td></tr>
-                  <tr><th scope="row">＋ プロンプトのハッシュ</th><td class="good">文言を変えた呼び出しだけ取り直す</td></tr>
+                  <tr><th scope="row">＋ プロンプトのハッシュ</th><td class="good">文言を変えた呼び出しだけキャッシュミスにして取り直す</td></tr>
                 </tbody>
               </table>
             </div>
@@ -169,7 +168,7 @@
                 <tbody>
                   <tr><th scope="row">ページ本文の Unicode の行区切り（U+2028）で、記録の行が途中で切れる</th><td>改行（\n）だけで分けるよう修正</td></tr>
                   <tr><th scope="row">再生用のプロセスが、import の時点でクラウドのメタデータへ接続しに行く</th><td>再生中は外に出ないよう修正</td></tr>
-                  <tr><th scope="row">レビューを待つ 1 週間で開発ブランチが 32 コミット進み、参照マスタの読み込みが変わった</th><td>記録の位置を読み込み関数の外側に移して 7 本を載せ直し、足りない呼び出しだけを取り直した（232 秒）</td></tr>
+                  <tr><th scope="row">レビューを待つ 1 週間で開発ブランチが 32 コミット進み、参照マスタの読み込みが変わった</th><td>記録の位置を読み込み関数の外側に移して 7 本を載せ直し、キャッシュミスした呼び出しだけを取り直した（最初から記録し直すと 942 秒のところ 232 秒）</td></tr>
                 </tbody>
               </table>
             </div>
