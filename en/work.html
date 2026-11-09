@@ -50,8 +50,8 @@
         <h1>Improving the accuracy of an LLM pipeline that identifies each store's operating company, and rebuilding its evaluation</h1>
         <p class="lead">In a B2B company database used by sales teams, the contact sales reps need is not the store itself but the company that operates it. I improved the production pipeline that identifies operating companies through web research and an LLM. Returning the wrong company sends sales reps to a company where no one can make the decision, so my top priority was not adding errors.</p>
         <dl class="tldr" aria-label="Summary in three lines">
-          <div><dt>Problem</dt><dd>The production pipeline often returned the wrong company: 69.8% precision on the training data (the 879 stores used for tuning; 136 wrong companies returned).</dd></div>
-          <div><dt>What I did</dt><dd>Counted errors by cause and fixed them, reaching 90.6% precision on the training data (136 → 44). Partway through, I realized I was overfitting to it and rebuilt the evaluation with separate dev, validation and test sets.</dd></div>
+          <div><dt>Problem</dt><dd>The production pipeline often returned the wrong company: 69.8% precision on the training data (the 879 stores used for tuning).</dd></div>
+          <div><dt>What I did</dt><dd>Counted errors by cause and fixed them, reaching 90.6% precision on the training data. Partway through, I realized I was overfitting to it and rebuilt the evaluation with separate dev, validation and test sets.</dd></div>
           <div><dt>On test data</dt><dd>On the test data (200 stores never used for tuning), compared with the values that were in production, precision stayed at the same level (89.1% → 89.6%) while coverage rose from 63.6% to 77.9%.</dd></div>
         </dl>
         <p class="tldr-note">69.8% → 90.6% is on the training data (879 stores); the values around 89% are on the test data (200 stores). Precision is also counted differently. On the training data, returning a company for any of the 416 stores whose ground truth is blank (no operating company, or none could be confirmed) counts as an error, an "over-extraction". On the test data, only stores whose ground truth has a company are counted, so over-extractions are excluded. So the production values (around 89%) and the pre-improvement 69.8% can't be compared directly.</p>
@@ -122,12 +122,10 @@
                 <thead><tr><th scope="col">Metric</th><th scope="col" class="n">Before</th><th scope="col" class="n">After</th></tr></thead>
                 <tbody>
                   <tr><th scope="row">Precision (share of returned values that were correct; over-extractions count as errors)</th><td class="n">69.8%</td><td class="n good">90.6%</td></tr>
-                  <tr><th scope="row">Coverage (share of the 463 stores whose ground truth has a company that were answered correctly)</th><td class="n">67.8%</td><td class="n good">86.0%</td></tr>
-                  <tr><th scope="row">Wrong answers + over-extraction (returned a different company / returned a company for a store with no operating company or none that could be confirmed)</th><td class="n">136</td><td class="n good">44</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="table-note">Precision = correct ÷ (correct + wrong answers + over-extractions); coverage = correct ÷ (correct + wrong answers + misses). 416 of the 879 stores have a blank ground truth, and returning a company for them is an over-extraction. The before/after difference also includes updates to the reference master data during the period. Split into 5 PRs, reviewed, and merged into the production code.</p>
+            <p class="table-note">Precision = correct ÷ (correct + wrong answers + over-extractions). 416 of the 879 stores have a blank ground truth, and returning a company for them is an over-extraction. The before/after difference also includes updates to the reference master data during the period. Split into 5 PRs, reviewed, and merged into the production code.</p>
           </section>
 
           <section id="challenges" aria-labelledby="h-challenges">
