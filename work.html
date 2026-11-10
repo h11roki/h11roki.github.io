@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="assets/style.css?v=20261109a">
+  <link rel="stylesheet" href="assets/style.css?v=20261110a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="assets/main.js?v=20261109a" defer></script>
+  <script src="assets/main.js?v=20261110a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -101,14 +101,14 @@
             <p>改善に一度も使っていないテスト用の 200 店舗で、本番に入っている値と比べました（区分の分け方は下の 04）。精度はほぼそのままに、カバレッジを 14 ポイント上げています。この表の精度は、正解に会社がある店舗だけで数えています（過抽出を含まない）。</p>
             <div class="table-wrap">
               <table class="wide">
-                <caption>本番から抜き出した店舗を 3 つに分けて、本番に入っていた値と比較（精度は過抽出を含まない）</caption>
+                <caption>本番から新しく抜き出した 1,800 店舗（学習用データの 879 店舗とは別）を 3 つに分けて、本番に入っていた値と比較（精度は過抽出を含まない）</caption>
                 <thead>
                   <tr><th scope="col">区分</th><th scope="col" class="n">精度（今回）</th><th scope="col" class="n">カバレッジ（今回）</th><th scope="col" class="n">精度（本番の値）</th><th scope="col" class="n">カバレッジ（本番の値）</th></tr>
                 </thead>
                 <tbody>
-                  <tr><th scope="row">テスト用（一度も見ていない）</th><td class="n">89.6%</td><td class="n good">77.9%</td><td class="n">89.1%</td><td class="n">63.6%</td></tr>
-                  <tr><th scope="row">検証用（件数だけを見た）</th><td class="n">89.7%</td><td class="n good">81.8%</td><td class="n">86.4%</td><td class="n">62.1%</td></tr>
-                  <tr><th scope="row">開発用（中を見て規則を考えた）</th><td class="n">89.6%</td><td class="n good">76.1%</td><td class="n">84.1%</td><td class="n">61.3%</td></tr>
+                  <tr><th scope="row">テスト用 200 店舗<span class="th-note">一度も見ていない</span></th><td class="n">89.6%</td><td class="n good">77.9%</td><td class="n">89.1%</td><td class="n">63.6%</td></tr>
+                  <tr><th scope="row">検証用 600 店舗<span class="th-note">件数だけを見た</span></th><td class="n">89.7%</td><td class="n good">81.8%</td><td class="n">86.4%</td><td class="n">62.1%</td></tr>
+                  <tr><th scope="row">開発用 1,000 店舗<span class="th-note">中を見て規則を考えた</span></th><td class="n">89.6%</td><td class="n good">76.1%</td><td class="n">84.1%</td><td class="n">61.3%</td></tr>
                 </tbody>
               </table>
             </div>

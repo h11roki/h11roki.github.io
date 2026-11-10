@@ -818,6 +818,9 @@ th, td { padding: 10px 14px; text-align: left; vertical-align: top; border-botto
 thead th { font-size: 12px; font-weight: 500; color: var(--ink-3); background: var(--bg-sunken); white-space: nowrap; }
 tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 tbody th { font-weight: 500; color: var(--ink); min-width: 9em; }
+tbody th:has(> .th-note) { white-space: nowrap; }
+.th-note { display: block; font-size: 12px; font-weight: 400; color: var(--ink-3); white-space: normal; }
+:lang(ja) .th-note { white-space: nowrap; }
 table.wide { min-width: 640px; }
 td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -0.01em; }
 td.good { color: var(--accent-ink); font-weight: 500; }

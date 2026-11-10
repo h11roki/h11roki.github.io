@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="../assets/style.css?v=20261109a">
+  <link rel="stylesheet" href="../assets/style.css?v=20261110a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="../assets/main.js?v=20261109a" defer></script>
+  <script src="../assets/main.js?v=20261110a" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -101,14 +101,14 @@
             <p>On 200 test stores never used for tuning, I compared against the values currently in production (how the sets were split is described in 04 below). Precision stayed about the same, while coverage rose by 14 points. Precision in this table counts only stores whose ground truth has a company (over-extractions excluded).</p>
             <div class="table-wrap">
               <table class="wide">
-                <caption>Stores sampled from production, split into three sets and compared with the values that were in production (precision excludes over-extractions)</caption>
+                <caption>1,800 stores newly sampled from production (separate from the 879-store training data), split into three sets and compared with the values that were in production (precision excludes over-extractions)</caption>
                 <thead>
                   <tr><th scope="col">Set</th><th scope="col" class="n">Precision (new)</th><th scope="col" class="n">Coverage (new)</th><th scope="col" class="n">Precision (production)</th><th scope="col" class="n">Coverage (production)</th></tr>
                 </thead>
                 <tbody>
-                  <tr><th scope="row">Test (never looked at)</th><td class="n">89.6%</td><td class="n good">77.9%</td><td class="n">89.1%</td><td class="n">63.6%</td></tr>
-                  <tr><th scope="row">Validation (looked at counts only)</th><td class="n">89.7%</td><td class="n good">81.8%</td><td class="n">86.4%</td><td class="n">62.1%</td></tr>
-                  <tr><th scope="row">Dev (inspected to design rules)</th><td class="n">89.6%</td><td class="n good">76.1%</td><td class="n">84.1%</td><td class="n">61.3%</td></tr>
+                  <tr><th scope="row">Test<span class="th-note">200 stores, never looked at</span></th><td class="n">89.6%</td><td class="n good">77.9%</td><td class="n">89.1%</td><td class="n">63.6%</td></tr>
+                  <tr><th scope="row">Validation<span class="th-note">600 stores, looked at counts only</span></th><td class="n">89.7%</td><td class="n good">81.8%</td><td class="n">86.4%</td><td class="n">62.1%</td></tr>
+                  <tr><th scope="row">Dev<span class="th-note">1,000 stores, inspected to design rules</span></th><td class="n">89.6%</td><td class="n good">76.1%</td><td class="n">84.1%</td><td class="n">61.3%</td></tr>
                 </tbody>
               </table>
             </div>
