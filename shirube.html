@@ -52,7 +52,7 @@
         <dl class="tldr" aria-label="3 行の要約">
           <div><dt>課題</dt><dd>授業が将来の仕事のどこで役立つかは、シラバスを読んでも分かりにくい。職業と授業は使う言葉が違い（データサイエンティストと確率統計など）、キーワード検索ではつながらない。</dd></div>
           <div><dt>やったこと</dt><dd>職業名から LLM でスキルを読み取り、シラバスをベクトル検索し、LLM がリランクして理由つきで授業を選び、時間割に並べる Web アプリを一人で作って公開した。評価データ（開発用 50 職業・ホールドアウト 20 職業）と検定の仕組みを先に作り、変更の採否を決めた。</dd></div>
-          <div><dt>結果</dt><dd>費用を 1 件 0.83 円に据え置いたまま、作り直したときの結果の一致度（Jaccard）を 0.52 → 0.72 に上げた（p &lt; 0.001）。職業ごとの中身を見ていないホールドアウト 20 職業でも、関係のない授業の割合は 17.5% で、開発用（16.4%）と同じ水準（各 1 回の測定）。</dd></div>
+          <div><dt>結果</dt><dd>費用を 1 件 0.83 円に据え置いたまま、作り直したときの結果の一致度（Jaccard）を 0.52 → 0.72 に上げた（p &lt; 0.001）。職業ごとの中身を見ていないホールドアウト 20 職業でも、関係のない授業の割合は 17.5% で、開発用（16.4%）と同じ水準（11 月 4 日、各 1 回の測定）。</dd></div>
         </dl>
         <div class="link-row">
           <a class="btn btn-primary" href="https://shirube.duckdns.org">デモを開く <span aria-hidden="true">↗</span></a>
@@ -94,9 +94,9 @@
               <dt>担当範囲</dt>
               <dd>企画、設計、実装、評価、本番の構成と運用のすべて</dd>
               <dt>技術</dt>
-              <dd>Next.js（App Router）・TypeScript・Auth.js ／ FastAPI・SQLAlchemy（クリーンアーキテクチャ）／ PostgreSQL + pgvector ／ OpenAI API・LangChain の構造化出力 ／ Playwright・axe ／ Docker Compose・GitHub Actions・AWS EC2</dd>
+              <dd>Next.js（App Router）・TypeScript・Auth.js ／ FastAPI・SQLAlchemy（クリーンアーキテクチャ）／ PostgreSQL + pgvector ／ OpenAI API・LangChain の構造化出力 ／ Playwright・axe ／ Docker Compose・GitHub Actions・AWS EC2・Terraform</dd>
               <dt>URL</dt>
-              <dd><a class="ext" href="https://shirube.duckdns.org">https://shirube.duckdns.org</a>（ログイン前に見本の道標を見られます。作成は今はテストの利用者に限っています）<br><a class="ext" href="https://github.com/h11roki/Shirube">github.com/h11roki/Shirube</a></dd>
+              <dd><a class="ext" href="https://shirube.duckdns.org">https://shirube.duckdns.org</a>（ログイン前に見本の道標を見られます。Google でログインすれば誰でも、1 人 1 日 3 件まで作れます）<br><a class="ext" href="https://github.com/h11roki/Shirube">github.com/h11roki/Shirube</a></dd>
             </dl>
           </section>
 
@@ -112,7 +112,7 @@
               <li>職業の中心になる授業（<strong>柱</strong>）と、その前提になる授業（<strong>礎</strong>）を選び、授業ごとに理由とシラバスの原ページへのリンクを付ける。</li>
               <li>残りの学期に、配当回生、開講学期、コマの重なり、1 学期 16 単位の上限を守って並べる。路線図と週の時間割表で見られる。</li>
               <li>作成には 10〜30 秒かかるので非同期のジョブにし、作成中は 4 つの段のどこまで進んだかと待ち時間を出す。ページを閉じても作り続ける。</li>
-              <li>曖昧な職業名は、どう読んだかを画面に出す。もう取った授業は覚えて候補から外す。スマホ幅でも使え、WCAG 2.2 AA を目安にした。</li>
+              <li>職業名は入力のまま読み、誤字を直したときや意味を 1 つに選んだときは、どう読んだかを画面に出す。もう取った授業は覚えて候補から外す。スマホ幅でも使え、WCAG 2.2 AA を目安にした。</li>
             </ul>
             <div class="figure-pair">
               <figure class="figure">
@@ -145,7 +145,7 @@
                 </tbody>
               </table>
             </div>
-            <p style="margin-top:1em">その後、柱の理由に「仕事のどこで使うか」を書かせる変更で、理由が具体的な柱の割合を 36.8% から 67.1% に上げました（開発用 50 職業、差の 95% 区間 +17.8〜+42.7 ポイント）。測る前に採る条件を決めた変更は 9 件で、6 件を採り、3 件は採りませんでした（<a href="#changes">下の表</a>）。</p>
+            <p style="margin-top:1em">その後、柱の理由に「仕事のどこで使うか」を書かせる変更で、理由が具体的な柱の割合を 36.8% から 67.1% に上げました（開発用 50 職業、差の 95% 区間 +17.8〜+42.7 ポイント）。測る前に採る条件を決めた変更は 10 件で、7 件を採り、3 件は採りませんでした（<a href="#changes">下の表</a>）。</p>
 
             <h3>技術面の特徴</h3>
             <ol class="bullets">
@@ -183,7 +183,7 @@
               <div class="arch-row">
                 <p class="arch-label">推薦<small>worker</small></p>
                 <ol class="arch-cells arch-flow">
-                  <li><b>① 読み取り</b>gpt-5.4-mini。職業名を解釈、前提、スキル 3〜6 個に直す。職業名ごとに使い回す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0052-reading-cache.md">0052</a></span></li>
+                  <li><b>① 読み取り</b>gpt-5.4-mini。職業名を解釈、前提、スキル 3〜6 個に直す。職業名は入力のまま。職業名ごとに使い回す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0052-reading-cache.md">0052</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0104-keep-occupation-name.md">0104</a></span></li>
                   <li><b>② 検索</b>pgvector。職業全体とスキルごとのクエリの順位から交互に 20 件。全件を厳密に計算<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0063-search-by-skill.md">0063</a></span></li>
                   <li><b>③ リランク</b>gpt-5.4-nano × 3。候補の抜粋を読み、柱と礎を理由つきで返す。3 回並列に呼び、2 票以上を残す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0023-foundation-links-core.md">0023</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0049-selection-votes.md">0049</a></span></li>
                   <li><b>④ 配置</b>自作のアルゴリズム。回生、学期、コマ、16 単位の上限を守り、貪欲法で詰める。LLM は使わない<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0007-greedy-timetable.md">0007</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0025-roadmap-candidates-by-semester.md">0025</a></span></li>
@@ -198,6 +198,7 @@
                   <li><b>デプロイ</b>CI がすべて通った版だけサーバーが取りに行く。応えなければ前の版に戻す<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0094-pull-deploy.md">0094</a></span></li>
                   <li><b>監視と費用</b>15 分ごとに外から health（DB、待ち、OpenAI の残高）を確かめる。前払い<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0075-production-setup.md">0075</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0095-health-monitor.md">0095</a></span></li>
                 </ul>
+                <p class="arch-note"><b>IaC と入口</b>：EC2、セキュリティグループ、Elastic IP、鍵の組、SSM の IAM ロールを Terraform で持つ。SSH の 22 番は閉じ、Session Manager を通して入る。コンテナからはロールの鍵を取れない<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0105-terraform-import.md">0105</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0106-ssm-session-manager.md">0106</a></span></p>
               </div>
               <p class="arch-legend"><span><i class="lg-solid"></i>実線の枠はすべて自分で設計した</span><span><i class="lg-dashed"></i>外部の API（OpenAI）</span><span><i class="lg-store"></i>データの置き場</span></p>
             </div>
@@ -207,7 +208,7 @@
                 <source srcset="assets/img/shirube-architecture-dark.webp" media="(prefers-color-scheme: dark)">
                 <img src="assets/img/shirube-architecture.webp" width="1600" height="1284" loading="lazy" alt="構成図。利用者のブラウザから Caddy、Next.js、FastAPI、PostgreSQL（pgvector）へ。worker が待ち行列から取り出し、OpenAI の gpt-5.4-mini、text-embedding-3-large、gpt-5.4-nano を呼ぶ。すべて AWS EC2 上の Docker Compose で動き、GitHub Actions が CI とイメージの作成、監視を担う">
               </picture>
-              <figcaption>構成図。AWS EC2（t4g.small）の上で Docker Compose で動かし、HTTPS は Caddy。CI とイメージの作成、外からの監視は GitHub Actions。</figcaption>
+              <figcaption>構成図。AWS EC2（t4g.small）の上で Docker Compose で動かし、HTTPS は Caddy。AWS の資源は Terraform で持つ。CI とイメージの作成、外からの監視は GitHub Actions。</figcaption>
             </figure>
           </section>
 
@@ -218,11 +219,11 @@
               <div class="case-head"><span class="idx">①</span><h3>読み取り（gpt-5.4-mini）</h3></div>
               <dl>
                 <dt>入力</dt>
-                <dd>役割（進路の相談役）。学科の授業がそのまま備える職業はそのまま読み、細かい職種だけ広く読むという決まり。利用者の職業名。</dd>
+                <dd>役割（進路の相談役）。職業名は細かい職種も言い換えずに入力のまま読み、誤字のときだけ直して、そう読んだことを前提に書くという決まり。利用者の職業名。</dd>
                 <dt>出力</dt>
                 <dd>職業名の解釈、前提（無ければ null）、スキル 3〜6 個（20 字以内の名詞句）。</dd>
                 <dt>工夫</dt>
-                <dd>スキルは製品名ではなく、授業で学ぶ分野の名前で書かせ（React ではなく「Web の仕組みとプログラミング」）、検索のクエリをシラバスの言葉に寄せた。前提を書かずに言い換えた答えは、コードで元の職業名に戻す。</dd>
+                <dd>スキルは製品名ではなく、授業で学ぶ分野の名前で書かせ（React ではなく「Web の仕組みとプログラミング」）、検索のクエリをシラバスの言葉に寄せた。学科の授業に無い応用分野の職種では、その仕事の土台になる授業の分野を挙げさせる。授業とのつながりはスキルが担うので、職業名を広く読み替えるのはやめた。前提を書かずに言い換えた答えと、入力と空白や全角半角だけ違う答えは、コードで元の職業名に戻す。</dd>
               </dl>
             </div>
             <div class="case">
@@ -249,6 +250,9 @@
                   <tr><th scope="row">検索で絞ってから、LLM が読み直す</th><td>検索の上位 10 件の約 2 割は、判定で関係なし。LLM が中身を読めば外せ、理由も根拠を持って書ける。全科目を読ませると入力が 5 倍以上になり、他の学科に広げられない</td></tr>
                   <tr><th scope="row">段ごとにモデルを分ける</th><td>読み取りは、曖昧な職業名 4 件で前提を書けたのが mini は 4 件、nano は 1 件だったので mini。リランクは 10 職業 × 2 回で nano が mini と同等以上、費用は約 4 分の 1 なので nano</td></tr>
                   <tr><th scope="row">スキルごとのクエリで検索する（クエリ分解）</th><td>取りこぼしの多くは、スキルが 1 つのクエリの中で薄まることが原因だった。50 職業で交互に比べ、関係なしが 23.0% から 15.1% に下がった（p = 0.001）</td></tr>
+                  <tr><th scope="row">職業名は言い換えず、入力のまま読む</th><td>以前は細かい職種を広い職業に読み替えていたが、画面の名前が思った職業と違って見えた。読み方を替えてもリランクの指標は動かず、授業とのつながりはスキルが担っていた。入力のまま読むと、検索の再現率 @20 は 0.85 から 0.91 に上がった（交互に 3 回ずつ）</td></tr>
+                  <tr><th scope="row">AWS の資源を Terraform で持ち、SSH の 22 番を閉じる</th><td>手で作った資源は、どの設定かがコンソールにしか残っていなかった。取り込んで plan の差が無いことを確かめてから変え、入口は SSM Session Manager にした。メタデータの hop 数を 1 にして、コンテナからロールの鍵を取れなくした</td></tr>
+                  <tr><th scope="row">トップの見出しのフェードインをやめ、見出しの字だけのフォント（4KB）を先読みする</th><td>本番の Lighthouse（スマホの設定、回線と CPU を絞る devtools、3 回）で、最も大きな表示が 5.55〜6.08 秒だった。遅らせていたのはフォントではなく見出しのフェードインで、やめると 2.74〜2.97 秒、性能は 72〜75 点から 89〜91 点になった。字だけのフォントは、端末の明朝から替わるちらつきを消す</td></tr>
                   <tr><th scope="row">時間割は貪欲法、作成は非同期</th><td>LLM に組ませるとコマが重なる。同期で作ると、画面がタイムアウトしたあとに保存され、作り直しで費用が二重にかかる</td></tr>
                 </tbody>
               </table>
@@ -315,6 +319,7 @@
                   <tr><th scope="row">少しでも役立つ授業は、迷っても選ぶ</th><td class="aim">道標を広く取る</td><td>柱の数 開発用 4.60 → 5.44、ホールドアウト 4.35 → 6.15（差あり）。関係なし 12.3% → 16.4%</td><td><span class="verdict yes">採った</span><br>網羅を優先。採る条件が甘かったことも記録</td></tr>
                   <tr><th scope="row">3 回のうち 1 回でも選べば残す</th><td class="aim">柱を増やす</td><td>柱 5.66 → 6.20（p = 0.076）。関係なし 13.4% → 19.7%（p = 0.003）</td><td><span class="verdict no">採らなかった</span></td></tr>
                   <tr><th scope="row">柱の理由に、仕事のどこで授業のどの内容を使うかを書かせる</th><td class="aim">理由の具体さ</td><td>理由が具体的な柱 36.8% → 67.1%（区間 +17.8〜+42.7）。関係なしは悪化せず、柱の数は 5.74 → 5.14（差あり）。理由を書きにくい授業を柱にしなくなったとみている</td><td><span class="verdict yes">採った</span></td></tr>
+                  <tr><th scope="row">職業名を言い換えず、入力のまま読む（誤字だけ直す）</th><td class="aim">入力のまま読む</td><td>開発用 50 職業すべてを入力のまま読んだ。検索の再現率 @20 0.85 → 0.91（交互に 3 回ずつ）。OpenAI の残高が少ないので、リランクの指標はまだ測っていない</td><td><span class="verdict yes">採った</span><br>リランクの指標は補充後に確かめる</td></tr>
                 </tbody>
               </table>
             </div>
@@ -325,16 +330,17 @@
             <h2 id="h-now"><span class="idx">11</span>今の値と、これから</h2>
             <div class="table-wrap">
               <table>
-                <caption>選ぶ授業を広げた変更のあとに各 1 回（2026 年 11 月 4 日）</caption>
-                <thead><tr><th scope="col">指標</th><th scope="col" class="n">開発用 50 職業</th><th scope="col" class="n">ホールドアウト 20 職業</th></tr></thead>
+                <caption>開発用 50 職業、柱の理由の書き方を替えたあとに 1 回（2026 年 11 月 4 日）</caption>
+                <thead><tr><th scope="col">指標</th><th scope="col" class="n">今の値</th><th scope="col" class="n">前の設定を別の時刻に 3 回</th></tr></thead>
                 <tbody>
-                  <tr><th scope="row">選んだ授業のうち関係なし</th><td class="n">16.4%</td><td class="n">17.5%</td></tr>
-                  <tr><th scope="row">期待する授業を柱に選んだ割合</th><td class="n">67.5%</td><td class="n">89.7%</td></tr>
-                  <tr><th scope="row">柱の適合率</th><td class="n">37.5%</td><td class="n">42.3%</td></tr>
+                  <tr><th scope="row">候補の再現率（期待する授業のうち候補 20 件に入った割合）</th><td class="n">88.8%</td><td class="n">88.7〜90.7%</td></tr>
+                  <tr><th scope="row">選んだ授業のうち関係なし</th><td class="n">15.1%</td><td class="n">13.4〜16.7%</td></tr>
+                  <tr><th scope="row">期待する授業を柱に選んだ割合</th><td class="n">63.6%</td><td class="n">67.5〜70.2%</td></tr>
+                  <tr><th scope="row">柱の適合率</th><td class="n">37.4%</td><td class="n">36.2〜37.5%</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="table-note">ホールドアウトの 89.7% は、同じ時刻に流した前の設定（69.0%）から跳ねた 1 回の値で、揺れを含む。10 の表の最後の変更のあと、開発用は 15.1%、63.6%、37.4%（ホールドアウトは未測定）。</p>
+            <p class="table-note">同じ設定でも右の列ほどは動くので、1 回の値はその幅で読む。期待する授業を柱に選んだ割合の 63.6% は、この幅より低い。そのあと職業名を入力のまま読む変更（10 の表の最後の行）で、検索の再現率 @20 は 0.85 から 0.91 に上がったが、リランクまで通した指標は OpenAI の残高が少ないのでまだ測っていない。ホールドアウトは直しを決めたあとに 3 回だけ使い、選ぶ授業を広げた変更のあと（11 月 4 日、1 回）は関係なし 17.5%、期待する授業を柱に選んだ割合 89.7%（同じ時刻に流した前の設定は 69.0% で、揺れを含む）、柱の適合率 42.3%。今の設定はホールドアウトでは測っていない。</p>
 
             <h3>まだ足りないこと</h3>
             <ul class="bullets">
@@ -347,7 +353,7 @@
             <h3>次にやること</h3>
             <ul class="bullets">
               <li>学科の学生や教員に一部を判定してもらい、Claude の判定者との一致（κ）を測る。</li>
-              <li>期待する 151 件のうち、リランクで落としたのが 13%、読み取りで 12%、検索で 3%。次は読み取りの揺れを直すが、同じ 50 職業で直し続けると過学習するので、見ていない職業を足してから確かめる。</li>
+              <li>期待する 151 件のうち、リランクで落としたのが 13%、読み取りで 12%、検索で 3%（10 月 26 日の設定）。読み取りは職業名を入力のまま読む形に替えて検索の再現率が上がったので、OpenAI の残高を補充したら、前の読み方と交互に流してリランクまで通した指標を確かめる。同じ 50 職業で直し続けると過学習するので、見ていない職業も足していく。</li>
               <li>履修登録の時期（3〜4 月）に学生に使ってもらい、作り直しの回数や、もう取ったと答えた授業を、作成の記録と合わせて見る。</li>
               <li>必修と卒業要件を入れ、時間割を整数計画に替える。先に、貪欲法で要件を満たせない道標の数を測る。</li>
             </ul>

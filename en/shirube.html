@@ -52,7 +52,7 @@
         <dl class="tldr" aria-label="Summary in three lines">
           <div><dt>Problem</dt><dd>Reading syllabi doesn't tell you where a course will matter in a future job. Jobs and courses use different words (data scientist vs. probability and statistics), so keyword search can't connect them.</dd></div>
           <div><dt>What I did</dt><dd>Built and launched, solo, a web app where an LLM extracts skills from a job title, vector search runs over the syllabi, an LLM reranks the candidates and picks courses with reasons, and the courses are laid out in a timetable. I built the evaluation set (50 dev jobs, 20 holdout jobs) and the statistical tests first, and used them to decide which changes to adopt.</dd></div>
-          <div><dt>Result</dt><dd>At an unchanged cost of ¥0.83 per roadmap, raised the agreement between regenerated results (Jaccard) from 0.52 to 0.72 (p &lt; 0.001). On the 20 holdout jobs, whose per-job results I never looked at, the share of irrelevant courses was 17.5%, on par with the dev set (16.4%) (one run each).</dd></div>
+          <div><dt>Result</dt><dd>At an unchanged cost of ¥0.83 per roadmap, raised the agreement between regenerated results (Jaccard) from 0.52 to 0.72 (p &lt; 0.001). On the 20 holdout jobs, whose per-job results I never looked at, the share of irrelevant courses was 17.5%, on par with the dev set (16.4%) (November 4, one run each).</dd></div>
         </dl>
         <div class="link-row">
           <a class="btn btn-primary" href="https://shirube.duckdns.org">Open demo <span aria-hidden="true">↗</span></a>
@@ -94,9 +94,9 @@
               <dt>My role</dt>
               <dd>All of it: planning, design, implementation, evaluation, and production infrastructure and operations</dd>
               <dt>Stack</dt>
-              <dd>Next.js (App Router), TypeScript, Auth.js / FastAPI, SQLAlchemy (Clean Architecture) / PostgreSQL + pgvector / OpenAI API, LangChain structured output / Playwright, axe / Docker Compose, GitHub Actions, AWS EC2</dd>
+              <dd>Next.js (App Router), TypeScript, Auth.js / FastAPI, SQLAlchemy (Clean Architecture) / PostgreSQL + pgvector / OpenAI API, LangChain structured output / Playwright, axe / Docker Compose, GitHub Actions, AWS EC2, Terraform</dd>
               <dt>URL</dt>
-              <dd><a class="ext" href="https://shirube.duckdns.org">https://shirube.duckdns.org</a> (you can view a sample roadmap without signing in; creating roadmaps is currently limited to test users)<br><a class="ext" href="https://github.com/h11roki/Shirube">github.com/h11roki/Shirube</a></dd>
+              <dd><a class="ext" href="https://shirube.duckdns.org">https://shirube.duckdns.org</a> (you can view a sample roadmap without signing in; anyone with a Google account can sign in and create up to 3 roadmaps a day)<br><a class="ext" href="https://github.com/h11roki/Shirube">github.com/h11roki/Shirube</a></dd>
             </dl>
           </section>
 
@@ -112,7 +112,7 @@
               <li>Selects the courses central to the job (<strong>core courses</strong>) and the courses they build on (<strong>foundation courses</strong>), each with a reason and a link to the original syllabus page.</li>
               <li>Lays them out over the remaining semesters, respecting the year each course is offered to, the semester it runs in, period conflicts, and the 16-credit-per-semester cap. Viewable as a route map and as a weekly timetable.</li>
               <li>Generation takes 10–30 seconds, so it runs as an async job; while it runs, the page shows which of the four stages it has reached and the expected wait. It keeps going even if you close the page.</li>
-              <li>For an ambiguous job title, the screen shows how it was interpreted. Courses you've already taken are remembered and excluded from the candidates. Works at phone width, with WCAG 2.2 AA as the target.</li>
+              <li>Job titles are read as entered; when a typo is corrected or one meaning of an ambiguous title is chosen, the screen shows how it was read. Courses you've already taken are remembered and excluded from the candidates. Works at phone width, with WCAG 2.2 AA as the target.</li>
             </ul>
             <div class="figure-pair">
               <figure class="figure">
@@ -145,7 +145,7 @@
                 </tbody>
               </table>
             </div>
-            <p style="margin-top:1em">Later, a change that has the model state where in the job each core course is used raised the share of core courses with a specific reason from 36.8% to 67.1% (50 dev jobs; 95% interval for the difference +17.8 to +42.7 points). Of the 9 changes whose adoption criteria I set before measuring, I adopted 6 and rejected 3 (<a href="#changes">table below</a>).</p>
+            <p style="margin-top:1em">Later, a change that has the model state where in the job each core course is used raised the share of core courses with a specific reason from 36.8% to 67.1% (50 dev jobs; 95% interval for the difference +17.8 to +42.7 points). Of the 10 changes whose adoption criteria I set before measuring, I adopted 7 and rejected 3 (<a href="#changes">table below</a>).</p>
 
             <h3>Technical highlights</h3>
             <ol class="bullets">
@@ -183,7 +183,7 @@
               <div class="arch-row">
                 <p class="arch-label">Recommendation<small>worker</small></p>
                 <ol class="arch-cells arch-flow">
-                  <li><b>① Interpret</b>gpt-5.4-mini. Turns the job title into an interpretation, an assumption and 3–6 skills. Reused per job title<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0052-reading-cache.md">0052</a></span></li>
+                  <li><b>① Interpret</b>gpt-5.4-mini. Turns the job title into an interpretation, an assumption and 3–6 skills. The job title is kept as entered. Reused per job title<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0018-llm-pipeline.md">0018</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0052-reading-cache.md">0052</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0104-keep-occupation-name.md">0104</a></span></li>
                   <li><b>② Retrieve</b>pgvector. Takes 20 candidates by alternating between the rankings for a whole-job query and per-skill queries. Exact search over all rows<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0063-search-by-skill.md">0063</a></span></li>
                   <li><b>③ Rerank</b>gpt-5.4-nano × 3. Reads excerpts of the candidates and returns core and foundation courses with reasons. Called 3 times in parallel; keeps courses with 2 or more votes<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0023-foundation-links-core.md">0023</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0049-selection-votes.md">0049</a></span></li>
                   <li><b>④ Schedule</b>My own algorithm. Packs courses greedily while respecting year, semester, period and the 16-credit cap. No LLM<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0007-greedy-timetable.md">0007</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0025-roadmap-candidates-by-semester.md">0025</a></span></li>
@@ -198,6 +198,7 @@
                   <li><b>Deploy</b>The server pulls only versions that passed all of CI. If the new version doesn't respond, it rolls back to the previous one<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0094-pull-deploy.md">0094</a></span></li>
                   <li><b>Monitoring and cost</b>An external health check every 15 minutes (DB, queue, OpenAI balance). Prepaid<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0075-production-setup.md">0075</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0095-health-monitor.md">0095</a></span></li>
                 </ul>
+                <p class="arch-note"><b>IaC and access</b>: EC2, the security group, Elastic IP, key pair and the IAM role for SSM are managed in Terraform. SSH port 22 is closed; access goes through Session Manager. Containers can't read the role's credentials<span class="adrs"><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0105-terraform-import.md">0105</a><a href="https://github.com/h11roki/Shirube/blob/main/docs/adr/0106-ssm-session-manager.md">0106</a></span></p>
               </div>
               <p class="arch-legend"><span><i class="lg-solid"></i>Every solid box is my own design</span><span><i class="lg-dashed"></i>External API (OpenAI)</span><span><i class="lg-store"></i>Data store</span></p>
             </div>
@@ -207,7 +208,7 @@
                 <source srcset="../assets/img/shirube-architecture-dark.webp" media="(prefers-color-scheme: dark)">
                 <img src="../assets/img/shirube-architecture.webp" width="1600" height="1284" loading="lazy" alt="Architecture diagram. From the user's browser through Caddy, Next.js and FastAPI to PostgreSQL (pgvector). The worker takes jobs from the queue and calls OpenAI's gpt-5.4-mini, text-embedding-3-large and gpt-5.4-nano. Everything runs on Docker Compose on AWS EC2, and GitHub Actions handles CI, image builds and monitoring">
               </picture>
-              <figcaption>Architecture diagram. Runs on Docker Compose on AWS EC2 (t4g.small), with HTTPS via Caddy. GitHub Actions handles CI, image builds and external monitoring.</figcaption>
+              <figcaption>Architecture diagram. Runs on Docker Compose on AWS EC2 (t4g.small), with HTTPS via Caddy. The AWS resources are managed in Terraform. GitHub Actions handles CI, image builds and external monitoring.</figcaption>
             </figure>
           </section>
 
@@ -218,11 +219,11 @@
               <div class="case-head"><span class="idx">①</span><h3>Interpret (gpt-5.4-mini)</h3></div>
               <dl>
                 <dt>Input</dt>
-                <dd>A role (career advisor). A rule: take jobs that the department's courses directly prepare for at face value, and read only narrowly specialized roles more broadly. The user's job title.</dd>
+                <dd>A role (career advisor). A rule: read the job title as entered, even for narrowly specialized roles, and correct it only when it contains a typo, stating that reading as the assumption. The user's job title.</dd>
                 <dt>Output</dt>
                 <dd>An interpretation of the job title, an assumption (null if none), and 3–6 skills (noun phrases of up to 20 characters).</dd>
                 <dt>Approach</dt>
-                <dd>Skills are written as the names of fields taught in courses rather than product names ("how the web works and programming" rather than React), which pulls search queries toward the language of syllabi. If the model rephrases the job title without stating an assumption, code restores the original job title.</dd>
+                <dd>Skills are written as the names of fields taught in courses rather than product names ("how the web works and programming" rather than React), which pulls search queries toward the language of syllabi. For applied roles the department doesn't teach directly, the skills name the fields that underpin the work. Since the skills carry the link to courses, I stopped broadening job titles. If the model rephrases the job title without stating an assumption, or differs from the input only in spacing or full-width/half-width characters, code restores the original job title.</dd>
               </dl>
             </div>
             <div class="case">
@@ -249,6 +250,9 @@
                   <tr><th scope="row">Narrow with retrieval, then have the LLM reread</th><td>About 20% of the top 10 retrieval results are judged irrelevant. When the LLM reads the content, it can drop them and write reasons grounded in evidence. Having it read every course would make the input 5× larger or more, and it couldn't be extended to other departments</td></tr>
                   <tr><th scope="row">A different model per stage</th><td>For Interpret, on 4 ambiguous job titles mini stated the assumption in 4 and nano in 1, so mini. For Rerank, over 10 jobs × 2 runs nano was on par with or better than mini at about a quarter of the cost, so nano</td></tr>
                   <tr><th scope="row">Search with per-skill queries (query decomposition)</th><td>Most of the misses came from skills being diluted within a single query. In an interleaved comparison over 50 jobs, the irrelevant share fell from 23.0% to 15.1% (p = 0.001)</td></tr>
+                  <tr><th scope="row">Read the job title as entered, without rephrasing</th><td>Earlier, specialized roles were reread as broader jobs, and the name on screen could look different from the job the user meant. Changing how titles were read didn't move the Rerank metrics; the skills carried the link to courses. Reading titles as entered raised retrieval recall@20 from 0.85 to 0.91 (3 interleaved runs each)</td></tr>
+                  <tr><th scope="row">Manage the AWS resources in Terraform and close SSH port 22</th><td>The hand-made resources' settings existed only in the console. I imported them and confirmed that plan showed no diff before changing anything, then moved access to SSM Session Manager. The instance metadata hop limit is 1, so containers can't read the role's credentials</td></tr>
+                  <tr><th scope="row">Drop the fade-in on the landing-page heading and preload a 4KB font with only the heading's glyphs</th><td>Production Lighthouse (mobile, devtools network and CPU throttling, 3 runs) put the largest contentful paint at 5.55–6.08 s. The delay came from the heading's fade-in, not the font: without it, LCP is 2.74–2.97 s and the performance score went from 72–75 to 89–91. The subset font removes the flicker when the heading switches from the system serif font</td></tr>
                   <tr><th scope="row">Greedy timetabling, async generation</th><td>When an LLM builds the timetable, periods overlap. With synchronous generation, results get saved after the page has already timed out, and regenerating doubles the cost</td></tr>
                 </tbody>
               </table>
@@ -315,6 +319,7 @@
                   <tr><th scope="row">Select any course that helps even a little, even if borderline</th><td class="aim">Broader roadmaps</td><td>Core-course count: dev 4.60 → 5.44, holdout 4.35 → 6.15 (significant). Irrelevant 12.3% → 16.4%</td><td><span class="verdict yes">Adopted</span><br>Prioritized coverage. Also recorded that the adoption criteria were too lenient</td></tr>
                   <tr><th scope="row">Keep a course if even 1 of the 3 votes selects it</th><td class="aim">More core courses</td><td>Core courses 5.66 → 6.20 (p = 0.076). Irrelevant 13.4% → 19.7% (p = 0.003)</td><td><span class="verdict no">Rejected</span></td></tr>
                   <tr><th scope="row">Have core-course reasons state which course content is used where in the job</th><td class="aim">Reason specificity</td><td>Core courses with a specific reason 36.8% → 67.1% (interval +17.8 to +42.7). Irrelevant did not worsen; core-course count 5.74 → 5.14 (significant). My read is that it stopped making core courses out of courses whose reason is hard to write</td><td><span class="verdict yes">Adopted</span></td></tr>
+                  <tr><th scope="row">Read the job title as entered (correct only typos)</th><td class="aim">Read as entered</td><td>All 50 dev job titles were read as entered. Retrieval recall@20 0.85 → 0.91 (3 interleaved runs each). The Rerank metrics haven't been measured yet because the OpenAI balance is low</td><td><span class="verdict yes">Adopted</span><br>Rerank metrics to be checked after topping up</td></tr>
                 </tbody>
               </table>
             </div>
@@ -325,16 +330,17 @@
             <h2 id="h-now"><span class="idx">11</span>Current numbers and next steps</h2>
             <div class="table-wrap">
               <table>
-                <caption>One run each, after the change that broadened course selection (November 4, 2026)</caption>
-                <thead><tr><th scope="col">Metric</th><th scope="col" class="n">50 dev jobs</th><th scope="col" class="n">20 holdout jobs</th></tr></thead>
+                <caption>50 dev jobs, one run after the change to how core-course reasons are written (November 4, 2026)</caption>
+                <thead><tr><th scope="col">Metric</th><th scope="col" class="n">Current</th><th scope="col" class="n">Previous configuration, 3 runs at different times</th></tr></thead>
                 <tbody>
-                  <tr><th scope="row">Irrelevant share of selected courses</th><td class="n">16.4%</td><td class="n">17.5%</td></tr>
-                  <tr><th scope="row">Share of expected courses selected as core courses</th><td class="n">67.5%</td><td class="n">89.7%</td></tr>
-                  <tr><th scope="row">Core-course precision</th><td class="n">37.5%</td><td class="n">42.3%</td></tr>
+                  <tr><th scope="row">Candidate recall (share of expected courses among the 20 candidates)</th><td class="n">88.8%</td><td class="n">88.7–90.7%</td></tr>
+                  <tr><th scope="row">Irrelevant share of selected courses</th><td class="n">15.1%</td><td class="n">13.4–16.7%</td></tr>
+                  <tr><th scope="row">Share of expected courses selected as core courses</th><td class="n">63.6%</td><td class="n">67.5–70.2%</td></tr>
+                  <tr><th scope="row">Core-course precision</th><td class="n">37.4%</td><td class="n">36.2–37.5%</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="table-note">The 89.7% on holdout is a single run that jumped from the previous configuration run at the same time (69.0%), and includes run-to-run variation. After the last change in the table in section 10, dev is at 15.1%, 63.6% and 37.4% (holdout not yet measured).</p>
+            <p class="table-note">Even the same configuration moves at least as much as the right-hand column, so a single run should be read within that range; the 63.6% for expected courses selected as core is below it. The later change to read job titles as entered (last row of the table in section 10) raised retrieval recall@20 from 0.85 to 0.91, but the end-to-end metrics through Rerank haven't been measured yet because the OpenAI balance is low. The holdout set has been used only three times, each after a change was decided. After the change that broadened course selection (November 4, one run), it showed 17.5% irrelevant, 89.7% of expected courses selected as core (the previous configuration run at the same time had 69.0%, so this includes run-to-run variation) and 42.3% core-course precision. The current configuration hasn't been run on the holdout set.</p>
 
             <h3>Known gaps</h3>
             <ul class="bullets">
@@ -347,7 +353,7 @@
             <h3>Next steps</h3>
             <ul class="bullets">
               <li>Have students and faculty in the department label a subset, and measure agreement (κ) with the Claude judges.</li>
-              <li>Of the 151 expected courses, 13% are dropped at Rerank, 12% at Interpret and 3% at Retrieve. Next I'll fix the variation in Interpret, but continuing to tune on the same 50 jobs would overfit, so I'll add unseen jobs before verifying.</li>
+              <li>Of the 151 expected courses, 13% were dropped at Rerank, 12% at Interpret and 3% at Retrieve (October 26 configuration). Interpret now reads job titles as entered and retrieval recall went up, so once the OpenAI balance is topped up I'll run it interleaved against the previous reading to check the metrics through Rerank. Continuing to tune on the same 50 jobs would overfit, so I'll keep adding unseen jobs.</li>
               <li>Have students use it during course registration (March–April), and look at how often they regenerate and which courses they mark as already taken, together with the build records.</li>
               <li>Add required courses and graduation requirements, and switch timetabling to integer programming. First, measure how many roadmaps the greedy approach can't make meet the requirements.</li>
             </ul>
