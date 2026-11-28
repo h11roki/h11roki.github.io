@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My hardest engineering project: Improving the accuracy of an LLM that identifies operating companies | Hiroki Takahashi</title>
-  <meta name="description" content="During a long-term internship at a Kyoto-based startup, I improved a production LLM pipeline that identifies each store's operating company, raising both precision and coverage from the high 60s to about 90%, measured in an internal check of the production data. Partway through, I realized I had been overfitting to the evaluation and rebuilt it.">
+  <meta name="description" content="During a long-term internship at a Kyoto-based startup, I improved a production LLM pipeline that identifies each store's operating company, taking precision on the 879 tuning stores from 69.8% to 90.6% and raising coverage on held-out stores from 63.6% to 77.9%. Partway through, I realized I had been overfitting to the evaluation and rebuilt it.">
   <meta property="og:type" content="article">
   <meta property="og:title" content="My hardest engineering project | Hiroki Takahashi">
   <meta property="og:description" content="I counted errors by pipeline stage, separated the effect of each change from run-to-run variance, and rebuilt the evaluation after realizing I had been overfitting to it.">
@@ -52,9 +52,9 @@
         <dl class="tldr" aria-label="Summary in three lines">
           <div><dt>Problem</dt><dd>The production pipeline often returned the wrong company, and for many stores it couldn't identify the operating company at all. On the 879 stores used for tuning (the training data), precision was 69.8% and coverage 67.8%, both in the high 60s.</dd></div>
           <div><dt>What I did</dt><dd>Counted errors by cause and fixed them, reaching 90.6% precision and coverage of about 85% on the training data. Re-measuring on new stores, precision dropped sharply, and I realized I was overfitting to the training data. I rebuilt the evaluation with separate dev, validation and test sets, and rewrote the rules.</dd></div>
-          <div><dt>Results</dt><dd>Raised both precision and coverage from the high 60s to about 90%, measured in an internal check of the production data. The production data was regenerated with the rewritten version.</dd></div>
+          <div><dt>Results</dt><dd>Precision on the 879 stores used for tuning went from 69.8% to 90.6%. On test stores never used for tuning, the rewritten version raised coverage from 63.6% to 77.9% (precision 89.6%).</dd></div>
         </dl>
-        <p class="tldr-note">Precision is the share of returned values that were correct. Coverage is the share of stores with an operating company for which the correct company was identified. The before and after values come from scoring the 879 stores used for tuning, matched by corporate number. This scoring also counts it as an error (an "over-extraction") when a company is returned for any of the 416 stores whose ground truth is blank (no operating company, or none could be confirmed). The production figure of about 90% comes from internal validation, a separate measurement from the 879-store scoring (as of November 2026).</p>
+        <p class="tldr-note">Precision is the share of returned values that were correct. Coverage is the share of stores with an operating company for which the correct company was identified. The before and after values come from scoring the 879 stores used for tuning, matched by corporate number. This scoring also counts it as an error (an "over-extraction") when a company is returned for any of the 416 stores whose ground truth is blank (no operating company, or none could be confirmed). The test-store figures count only stores whose ground truth has a company, a separate measurement (see 03 below).</p>
       </div>
 
       <div class="doc-layout">
@@ -76,7 +76,7 @@
               <dt>Tech</dt>
               <dd>Python, Dagster, an in-house GPU-hosted LLM (a Qwen-family 35B MoE), morphological analysis (UniDic), search APIs and crawling, PostgreSQL, AWS (SQS, S3), Parquet and DuckDB, GitHub Actions, Claude Code</dd>
               <dt>Team</dt>
-              <dd>A data platform team of about 10 engineers. I own the store data (about 2 million stores) and am currently its only owner. QA creates the labeled ground truth, and full-time engineers do code review. Changes are split into small PRs with tests, reviewed, and then merged</dd>
+              <dd>A data platform team of about 10 engineers. I work on the store data (about 2 million stores). QA creates the labeled ground truth, and full-time engineers do code review. Changes are split into small PRs with tests, reviewed, and then merged</dd>
               <dt>Role</dt>
               <dd>Mainly responsible for improving the accuracy of the existing production pipeline and rebuilding its evaluation (analysis, design, implementation, validation). I also defined the scoring criteria myself</dd>
               <dt>Reference URL</dt>
@@ -98,21 +98,20 @@
 
           <section id="result" aria-labelledby="h-result">
             <h2 id="h-result"><span class="idx">03</span>Results</h2>
-            <p>I raised both precision and coverage from the high 60s to about 90%, measured in an internal check of the production data. Along the way, precision on the 879 stores used for tuning reached 90.6%, but it dropped sharply when I re-measured on new stores. I realized I was overfitting, so I rebuilt the evaluation and rewrote the rules (see 04 below). The production data was regenerated with this rewritten version.</p>
+            <p>On the 879 stores used for tuning, precision went from 69.8% to 90.6%. But it dropped sharply when I re-measured on new stores. I realized I was overfitting, so I rebuilt the evaluation and rewrote the rules (see 04 below). On test stores never used for tuning, the rewritten version raised coverage from 63.6% to 77.9%.</p>
             <div class="table-wrap">
               <table>
-                <caption>Precision and coverage in identifying operating companies (before and after: the 879 stores used for tuning; production data: internal validation after regeneration)</caption>
+                <caption>Precision and coverage in identifying operating companies (the 879 stores used for tuning)</caption>
                 <thead><tr><th scope="col">Stage</th><th scope="col" class="n">Precision</th><th scope="col" class="n">Coverage</th></tr></thead>
                 <tbody>
                   <tr><th scope="row">Before<span class="th-note">879 stores</span></th><td class="n">69.8%</td><td class="n">67.8%</td></tr>
                   <tr><th scope="row">After<span class="th-note">879 stores</span></th><td class="n good">90.6%</td><td class="n good">about 85%</td></tr>
-                  <tr><th scope="row">Production data<span class="th-note">after regeneration</span></th><td class="n good">about 90%</td><td class="n good">about 90%</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="table-note">Before and after are scores on the 879 stores with labeled ground truth used for tuning (the training data), scored by corporate number. Precision = correct ÷ (correct + wrong answers + over-extractions); coverage = correct ÷ the 463 stores whose ground truth has a company. 416 of the 879 stores have a blank ground truth, and returning a company for them is an over-extraction. For coverage after the improvement, the last recorded value is 85.3% (when the lookup table was removed; precision was 88.4% at that point), so it is shown as about 85%. The before/after difference also includes updates to the reference master data during the period. The improved version was split into 5 PRs, reviewed, and merged into the production code. The production figures come from internal validation of the production data regenerated with the rewritten version (as of November 2026).</p>
+            <p class="table-note">Before and after are scores on the 879 stores with labeled ground truth used for tuning (the training data), scored by corporate number. Precision = correct ÷ (correct + wrong answers + over-extractions); coverage = correct ÷ the 463 stores whose ground truth has a company. 416 of the 879 stores have a blank ground truth, and returning a company for them is an over-extraction. For coverage after the improvement, the last recorded value is 85.3% (when the lookup table was removed; precision was 88.4% at that point), so it is shown as about 85%. The before/after difference also includes updates to the reference master data during the period. The improved version was split into 5 PRs, reviewed, and merged into the production code.</p>
 
-            <p>Before the production data was regenerated, I also checked on stores never used for tuning. Stores newly sampled from production (separate from the 879) were split into three sets (see 04 below for how), and I compared the version before the rewrite (the one with 90.6% precision on the 879 stores) with the rewritten version. On the test stores, the version before the rewrite had 89.1% precision and 63.6% coverage, and the rewritten version had 89.6% precision and 77.9% coverage. Precision in this table counts only stores whose ground truth has a company (over-extractions excluded).</p>
+            <p>I also checked on stores never used for tuning. Stores newly sampled from production (separate from the 879) were split into three sets (see 04 below for how), and I compared the version before the rewrite (the one with 90.6% precision on the 879 stores) with the rewritten version. On the test stores, the version before the rewrite had 89.1% precision and 63.6% coverage, and the rewritten version had 89.6% precision and 77.9% coverage. Precision in this table counts only stores whose ground truth has a company (over-extractions excluded).</p>
             <div class="table-wrap">
               <table class="wide">
                 <caption>Stores newly sampled from production (separate from the 879-store training data), split into three sets, comparing the versions before and after the rewrite (precision excludes over-extractions)</caption>
@@ -210,7 +209,7 @@
                   <dt>Approach</dt>
                   <dd>I split the sampled stores, balanced for difficulty, into dev (inspected to design rules), validation (counts only), and test (measured only once, at the end), and decided on each change by counting correct answers gained and new errors created on both dev and validation. The final check targets errors such as returning a mall's management company, another company's job ad, or a neighboring store's invoice number, and discards the value only when the company reads as a facility manager, a different store, or an ad. When in doubt it keeps the value, and I re-ran it to confirm it didn't discard a single correct answer. For errors caused by master-data values, I didn't override them in code; I asked the master data owner to fix them.</dd>
                   <dt>Result</dt>
-                  <dd>The rewritten version reached 89.6% precision even on the test stores never used for tuning (counted differently from the 879-store figure). The production data was regenerated with this version, and an internal check shows about 90% for both precision and coverage.</dd>
+                  <dd>The rewritten version reached 89.6% precision and 77.9% coverage on the test stores never used for tuning (counted differently from the 879-store figure).</dd>
                 </dl>
               </details>
             </div>
